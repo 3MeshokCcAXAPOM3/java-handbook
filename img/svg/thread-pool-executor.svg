@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" font-family="Segoe UI, Inter, Arial, sans-serif">
+  <rect width="960" height="600" fill="#ffffff"/>
+  <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#6b6f78"/></marker></defs>
+  <text x="480" y="38" text-anchor="middle" font-size="24" font-weight="700" fill="#24262b">ThreadPoolExecutor: что происходит с новой задачей</text>
+
+  <rect x="24" y="70" width="150" height="60" rx="12" fill="#f6f5f1" stroke="#9a9ea6"/>
+  <text x="99" y="98" text-anchor="middle" font-size="15" font-weight="700" fill="#24262b">submit(task)</text>
+  <text x="99" y="117" text-anchor="middle" font-size="12" fill="#6b6f78">execute / invokeAll</text>
+  <line x1="174" y1="100" x2="210" y2="100" stroke="#6b6f78" stroke-width="2" marker-end="url(#a)"/>
+
+  <!-- шаг 1 -->
+  <rect x="214" y="66" width="250" height="68" rx="12" fill="#e9edfe" stroke="#4f6bed"/>
+  <text x="230" y="92" font-size="14" font-weight="700" fill="#3149c4">① потоков &lt; corePoolSize?</text>
+  <text x="230" y="114" font-size="12.5" fill="#24262b">да → создать новый поток для задачи</text>
+  <line x1="339" y1="134" x2="339" y2="170" stroke="#6b6f78" stroke-width="2" marker-end="url(#a)"/>
+  <text x="348" y="158" font-size="12" fill="#6b6f78">нет</text>
+  <!-- шаг 2 -->
+  <rect x="214" y="174" width="250" height="68" rx="12" fill="#e9edfe" stroke="#4f6bed"/>
+  <text x="230" y="200" font-size="14" font-weight="700" fill="#3149c4">② очередь не заполнена?</text>
+  <text x="230" y="222" font-size="12.5" fill="#24262b">да → положить задачу в очередь</text>
+  <line x1="339" y1="242" x2="339" y2="278" stroke="#6b6f78" stroke-width="2" marker-end="url(#a)"/>
+  <text x="348" y="266" font-size="12" fill="#6b6f78">нет</text>
+  <!-- шаг 3 -->
+  <rect x="214" y="282" width="250" height="68" rx="12" fill="#e9edfe" stroke="#4f6bed"/>
+  <text x="230" y="308" font-size="14" font-weight="700" fill="#3149c4">③ потоков &lt; maximumPoolSize?</text>
+  <text x="230" y="330" font-size="12.5" fill="#24262b">да → создать дополнительный поток</text>
+  <line x1="339" y1="350" x2="339" y2="386" stroke="#6b6f78" stroke-width="2" marker-end="url(#a)"/>
+  <text x="348" y="374" font-size="12" fill="#6b6f78">нет</text>
+  <!-- шаг 4 -->
+  <rect x="214" y="390" width="250" height="68" rx="12" fill="#fbe6ed" stroke="#c2456b"/>
+  <text x="230" y="416" font-size="14" font-weight="700" fill="#a3304f">④ RejectedExecutionHandler</text>
+  <text x="230" y="438" font-size="12.5" fill="#24262b">пул и очередь переполнены</text>
+
+  <!-- схема пула -->
+  <rect x="500" y="66" width="436" height="270" rx="16" fill="#e3f5ec" stroke="#1f9d6b" stroke-width="1.5"/>
+  <text x="718" y="92" text-anchor="middle" font-size="15" font-weight="700" fill="#137a52">Пул</text>
+  <text x="516" y="120" font-size="13" font-weight="700" fill="#24262b">workQueue</text>
+  <g>
+    <rect x="516" y="130" width="46" height="34" rx="6" fill="#fff" stroke="#1f9d6b"/><text x="539" y="152" text-anchor="middle" font-size="12" fill="#24262b">T5</text>
+    <rect x="566" y="130" width="46" height="34" rx="6" fill="#fff" stroke="#1f9d6b"/><text x="589" y="152" text-anchor="middle" font-size="12" fill="#24262b">T6</text>
+    <rect x="616" y="130" width="46" height="34" rx="6" fill="#fff" stroke="#1f9d6b"/><text x="639" y="152" text-anchor="middle" font-size="12" fill="#24262b">T7</text>
+    <rect x="666" y="130" width="46" height="34" rx="6" fill="#fff" stroke="#9ad4b8" stroke-dasharray="4 3"/>
+  </g>
+  <text x="730" y="144" font-size="12" fill="#6b6f78">ограниченная очередь —</text>
+  <text x="730" y="160" font-size="12" fill="#6b6f78">защита от OOM</text>
+  <text x="516" y="196" font-size="13" font-weight="700" fill="#24262b">Рабочие потоки</text>
+  <g font-size="12" text-anchor="middle">
+    <rect x="516" y="206" width="90" height="42" rx="8" fill="#1f9d6b"/><text x="561" y="224" fill="#fff">core</text><text x="561" y="240" fill="#e3f5ec">T1</text>
+    <rect x="612" y="206" width="90" height="42" rx="8" fill="#1f9d6b"/><text x="657" y="224" fill="#fff">core</text><text x="657" y="240" fill="#e3f5ec">T2</text>
+    <rect x="708" y="206" width="90" height="42" rx="8" fill="#9ad4b8"/><text x="753" y="224" fill="#24262b">extra</text><text x="753" y="240" fill="#24262b">T3</text>
+    <rect x="804" y="206" width="90" height="42" rx="8" fill="#9ad4b8"/><text x="849" y="224" fill="#24262b">extra</text><text x="849" y="240" fill="#24262b">T4</text>
+  </g>
+  <text x="516" y="276" font-size="12.5" fill="#24262b">Освободившийся поток берёт задачу из очереди.</text>
+  <text x="516" y="296" font-size="12.5" fill="#24262b">Лишние (extra) потоки завершаются после простоя</text>
+  <text x="516" y="314" font-size="12.5" fill="#24262b" font-family="Consolas, monospace">keepAliveTime</text>
+
+  <!-- политики -->
+  <rect x="500" y="354" width="436" height="160" rx="16" fill="#fbe6ed" stroke="#c2456b"/>
+  <text x="516" y="380" font-size="15" font-weight="700" fill="#a3304f">Политики отказа</text>
+  <g font-size="12.5" fill="#24262b">
+    <text x="516" y="404"><tspan font-weight="700" font-family="Consolas, monospace">AbortPolicy</tspan> — RejectedExecutionException (по умолчанию)</text>
+    <text x="516" y="428"><tspan font-weight="700" font-family="Consolas, monospace">CallerRunsPolicy</tspan> — выполнить в вызывающем потоке:</text>
+    <text x="530" y="446" fill="#6b6f78">естественное замедление продюсера (backpressure)</text>
+    <text x="516" y="470"><tspan font-weight="700" font-family="Consolas, monospace">DiscardPolicy</tspan> — молча выбросить задачу</text>
+    <text x="516" y="494"><tspan font-weight="700" font-family="Consolas, monospace">DiscardOldestPolicy</tspan> — выбросить самую старую</text>
+  </g>
+
+  <rect x="24" y="476" width="440" height="110" rx="14" fill="#fcf0dc" stroke="#d98a1c"/>
+  <text x="40" y="502" font-size="14" font-weight="700" fill="#9a5c06">Ловушки фабрик Executors</text>
+  <g font-size="12.5" fill="#24262b">
+    <text x="40" y="526">newFixedThreadPool — неограниченная очередь → OOM</text>
+    <text x="40" y="548">newCachedThreadPool — неограниченное число потоков</text>
+    <text x="40" y="570">С неограниченной очередью шаг ③ не наступает никогда</text>
+  </g>
+  <rect x="500" y="530" width="436" height="56" rx="12" fill="#f6f5f1"/>
+  <text x="516" y="553" font-size="12.5" fill="#24262b">Для блокирующих задач в Java 21+ —</text>
+  <text x="516" y="572" font-size="12.5" fill="#24262b" font-family="Consolas, monospace">Executors.newVirtualThreadPerTaskExecutor()</text>
+</svg>

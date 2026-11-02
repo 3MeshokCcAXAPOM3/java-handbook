@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 580" font-family="Segoe UI, Inter, Arial, sans-serif">
+  <rect width="960" height="580" fill="#ffffff"/>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#6b6f78"/></marker>
+    <marker id="r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#c2456b"/></marker>
+  </defs>
+  <text x="480" y="38" text-anchor="middle" font-size="24" font-weight="700" fill="#24262b">Как работает @Transactional: прокси вокруг бина</text>
+
+  <rect x="24" y="90" width="170" height="86" rx="12" fill="#f6f5f1" stroke="#9a9ea6"/>
+  <text x="109" y="120" text-anchor="middle" font-size="14" font-weight="700" fill="#24262b">OrderController</text>
+  <text x="109" y="142" text-anchor="middle" font-size="12" fill="#24262b">внедрён не сам сервис,</text>
+  <text x="109" y="159" text-anchor="middle" font-size="12" fill="#24262b">а его прокси</text>
+  <line x1="194" y1="133" x2="236" y2="133" stroke="#6b6f78" stroke-width="2" marker-end="url(#a)"/>
+  <text x="215" y="156" text-anchor="middle" font-size="11.5" fill="#6b6f78" font-family="Consolas, monospace">place()</text>
+
+  <rect x="240" y="64" width="696" height="300" rx="18" fill="#fcf0dc" stroke="#d98a1c" stroke-width="2" stroke-dasharray="7 5"/>
+  <text x="260" y="90" font-size="15" font-weight="700" fill="#9a5c06">Прокси OrderService (CGLIB-подкласс или JDK dynamic proxy)</text>
+  <rect x="260" y="104" width="300" height="244" rx="14" fill="#fff" stroke="#d98a1c"/>
+  <text x="410" y="128" text-anchor="middle" font-size="14" font-weight="700" fill="#24262b">TransactionInterceptor</text>
+  <g font-size="12.5" fill="#24262b">
+    <text x="276" y="156">1. TransactionManager.getTransaction()</text>
+    <text x="292" y="174" fill="#6b6f78">учитывая propagation и isolation;</text>
+    <text x="292" y="191" fill="#6b6f78">соединение привязывается к потоку</text>
+    <text x="276" y="216">2. вызов настоящего метода →</text>
+    <text x="276" y="242">3a. успех → commit()</text>
+    <text x="276" y="266">3b. RuntimeException или Error →</text>
+    <text x="292" y="284">rollback()</text>
+    <text x="276" y="308">3c. checked-исключение → commit()</text>
+    <text x="292" y="326" fill="#6b6f78">если не указан rollbackFor</text>
+  </g>
+  <line x1="560" y1="212" x2="600" y2="212" stroke="#6b6f78" stroke-width="2" marker-end="url(#a)"/>
+  <rect x="604" y="104" width="314" height="244" rx="14" fill="#e3f5ec" stroke="#1f9d6b" stroke-width="1.5"/>
+  <text x="761" y="128" text-anchor="middle" font-size="14" font-weight="700" fill="#137a52">Настоящий OrderService</text>
+  <text x="620" y="158" font-size="12.5" fill="#24262b" font-family="Consolas, monospace">@Transactional</text>
+  <text x="620" y="176" font-size="12.5" fill="#24262b" font-family="Consolas, monospace">public void place(…) {</text>
+  <text x="636" y="194" font-size="12.5" fill="#24262b" font-family="Consolas, monospace">repo.save(order);</text>
+  <text x="636" y="212" font-size="12.5" fill="#c2456b" font-family="Consolas, monospace" font-weight="700">this.audit(order);</text>
+  <text x="620" y="230" font-size="12.5" fill="#24262b" font-family="Consolas, monospace">}</text>
+  <text x="620" y="258" font-size="12.5" fill="#24262b" font-family="Consolas, monospace">@Transactional(REQUIRES_NEW)</text>
+  <text x="620" y="276" font-size="12.5" fill="#24262b" font-family="Consolas, monospace">public void audit(…) { … }</text>
+  <path d="M796 214 C 900 214, 900 262, 830 268" fill="none" stroke="#c2456b" stroke-width="2" marker-end="url(#r)"/>
+  <text x="620" y="306" font-size="12.5" fill="#c2456b" font-weight="700">this.audit() идёт мимо прокси:</text>
+  <text x="620" y="324" font-size="12.5" fill="#c2456b">новой транзакции НЕ будет</text>
+
+  <rect x="24" y="386" width="440" height="176" rx="14" fill="#fbe6ed" stroke="#c2456b"/>
+  <text x="44" y="412" font-size="15" font-weight="700" fill="#a3304f">Когда аннотация не срабатывает</text>
+  <g font-size="13" fill="#24262b">
+    <text x="44" y="438">• вызов метода изнутри того же класса (this)</text>
+    <text x="44" y="461">• метод private, final или static</text>
+    <text x="44" y="484">• объект создан через new, а не Spring</text>
+    <text x="44" y="507">• исключение перехвачено внутри метода</text>
+    <text x="44" y="530">• checked-исключение без rollbackFor</text>
+    <text x="44" y="553">• работа в другом потоке (@Async, CompletableFuture)</text>
+  </g>
+  <rect x="484" y="386" width="452" height="176" rx="14" fill="#e3f5ec" stroke="#1f9d6b"/>
+  <text x="504" y="412" font-size="15" font-weight="700" fill="#137a52">Как исправить</text>
+  <g font-size="13" fill="#24262b">
+    <text x="504" y="438">• вынести метод в отдельный бин</text>
+    <text x="504" y="461">• использовать TransactionTemplate в коде</text>
+    <text x="504" y="484">• rollbackFor = Exception.class для checked</text>
+    <text x="504" y="507">• короткие транзакции: без HTTP-вызовов внутри</text>
+    <text x="504" y="530">• readOnly = true для запросов только на чтение</text>
+    <text x="504" y="553">• self-инъекция через @Lazy (крайний случай)</text>
+  </g>
+</svg>

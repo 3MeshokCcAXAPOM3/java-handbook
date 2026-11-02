@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 580" font-family="Segoe UI, Inter, Arial, sans-serif">
+  <rect width="960" height="580" fill="#ffffff"/>
+  <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#6b6f78"/></marker></defs>
+  <text x="480" y="38" text-anchor="middle" font-size="24" font-weight="700" fill="#24262b">Распределённая трассировка: trace и spans</text>
+
+  <!-- сервисы -->
+  <g text-anchor="middle">
+    <rect x="24" y="64" width="160" height="54" rx="12" fill="#f6f5f1" stroke="#9a9ea6"/><text x="104" y="96" font-size="14" font-weight="700" fill="#24262b">gateway</text>
+    <rect x="264" y="64" width="160" height="54" rx="12" fill="#e9edfe" stroke="#4f6bed"/><text x="344" y="96" font-size="14" font-weight="700" fill="#3149c4">orders</text>
+    <rect x="504" y="64" width="160" height="54" rx="12" fill="#e3f5ec" stroke="#1f9d6b"/><text x="584" y="96" font-size="14" font-weight="700" fill="#137a52">payments</text>
+    <rect x="744" y="64" width="192" height="54" rx="12" fill="#fcf0dc" stroke="#d98a1c"/><text x="840" y="96" font-size="14" font-weight="700" fill="#9a5c06">PostgreSQL, Kafka</text>
+  </g>
+  <line x1="184" y1="91" x2="260" y2="91" stroke="#6b6f78" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="424" y1="91" x2="500" y2="91" stroke="#6b6f78" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="664" y1="91" x2="740" y2="91" stroke="#6b6f78" stroke-width="2" marker-end="url(#a)"/>
+  <text x="24" y="146" font-size="12.5" fill="#24262b">В каждом запросе передаётся заголовок W3C:</text>
+  <text x="300" y="146" font-size="12.5" fill="#24262b" font-family="Consolas, monospace">traceparent: 00-4bf92f…a3ce-00f067aa0ba902b7-01</text>
+  <text x="300" y="164" font-size="11.5" fill="#6b6f78">версия · traceId (общий для всей цепочки) · id родительского span · флаги</text>
+
+  <!-- waterfall -->
+  <rect x="24" y="182" width="912" height="250" rx="16" fill="#f6f5f1"/>
+  <text x="44" y="208" font-size="15" font-weight="700" fill="#24262b">Трасса в Grafana Tempo / Jaeger · traceId 4bf92f…</text>
+  <g font-size="12" fill="#6b6f78">
+    <line x1="260" y1="222" x2="260" y2="420" stroke="#e4e1d8"/><text x="260" y="234" text-anchor="middle">0</text>
+    <line x1="430" y1="222" x2="430" y2="420" stroke="#e4e1d8"/><text x="430" y="234" text-anchor="middle">100 мс</text>
+    <line x1="600" y1="222" x2="600" y2="420" stroke="#e4e1d8"/><text x="600" y="234" text-anchor="middle">200 мс</text>
+    <line x1="770" y1="222" x2="770" y2="420" stroke="#e4e1d8"/><text x="770" y="234" text-anchor="middle">300 мс</text>
+  </g>
+  <g font-size="12.5">
+    <text x="44" y="262" fill="#24262b">gateway  POST /orders</text><rect x="260" y="248" width="560" height="20" rx="5" fill="#9a9ea6"/><text x="828" y="262" fill="#24262b">330 мс</text>
+    <text x="60" y="292" fill="#24262b">orders  createOrder</text><rect x="276" y="278" width="520" height="20" rx="5" fill="#4f6bed"/>
+    <text x="76" y="322" fill="#24262b">orders  SELECT products</text><rect x="290" y="308" width="60" height="20" rx="5" fill="#d98a1c"/><text x="356" y="322" fill="#24262b">35 мс</text>
+    <text x="76" y="352" fill="#24262b">orders  → payments POST</text><rect x="360" y="338" width="370" height="20" rx="5" fill="#7d93f2"/>
+    <text x="92" y="382" fill="#24262b">payments  charge</text><rect x="372" y="368" width="350" height="20" rx="5" fill="#c2456b"/><text x="728" y="382" fill="#a3304f" font-weight="700">210 мс — узкое место</text>
+    <text x="76" y="412" fill="#24262b">orders  Kafka send</text><rect x="736" y="398" width="54" height="20" rx="5" fill="#d98a1c"/>
+  </g>
+
+  <rect x="24" y="448" width="448" height="120" rx="14" fill="#e9edfe"/>
+  <text x="44" y="474" font-size="14.5" font-weight="700" fill="#3149c4">Термины</text>
+  <g font-size="12.5" fill="#24262b">
+    <text x="44" y="498"><tspan font-weight="700">Trace</tspan> — путь одного запроса через все сервисы</text>
+    <text x="44" y="520"><tspan font-weight="700">Span</tspan> — операция: имя, начало, длительность, атрибуты</text>
+    <text x="44" y="542"><tspan font-weight="700">Context propagation</tspan> — передача traceId дальше</text>
+    <text x="44" y="560" fill="#6b6f78">(HTTP-заголовки, заголовки Kafka, MDC в логах)</text>
+  </g>
+  <rect x="488" y="448" width="448" height="120" rx="14" fill="#e3f5ec"/>
+  <text x="508" y="474" font-size="14.5" font-weight="700" fill="#137a52">В Spring Boot 3</text>
+  <g font-size="12.5" fill="#24262b">
+    <text x="508" y="498">Micrometer Tracing + мост OpenTelemetry,</text>
+    <text x="508" y="520">экспорт OTLP в Tempo, Jaeger, Zipkin;</text>
+    <text x="508" y="542">traceId попадает в логи — переход от лога к трассе;</text>
+    <text x="508" y="560">семплирование: management.tracing.sampling.probability</text>
+  </g>
+</svg>

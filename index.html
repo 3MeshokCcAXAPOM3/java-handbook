@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Java-справочник — учебник Java-разработчика · v0.9</title>
+<meta name="author" content="Антон Сынушкин">
+<meta name="version" content="0.9">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%234f6bed'/><text x='50' y='68' font-size='52' text-anchor='middle' fill='white' font-family='Arial' font-weight='bold'>J</text></svg>">
+<link rel="stylesheet" href="assets/css/style.css">
+<script>try{var p=JSON.parse(localStorage.getItem('java-sprav:profiles'))||{cur:'p0'};var s=JSON.parse(localStorage.getItem(p.cur==='p0'?'java-sprav:v1':'java-sprav:v1:'+p.cur));if(s&&s.theme)document.documentElement.dataset.theme=s.theme}catch(e){}</script>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand"><div class="brand-logo">J</div><div><div class="brand-title">Java-справочник</div><div class="brand-sub">учебник · работает оффлайн</div></div></div>
+    <div class="profile" id="profile"></div>
+    <div class="side-links" id="sideLinks"></div>
+    <nav class="nav" id="nav"></nav>
+    <div class="side-foot" title="Автор и версия приложения">Антон Сынушкин · v0.9</div>
+  </aside>
+  <main class="main">
+    <div class="topbar">
+      <div class="search">
+        <svg class="s-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="search" type="search" autocomplete="off" spellcheck="false" placeholder="Поиск по вопросам и ответам…">
+        <kbd>/</kbd>
+        <div class="s-drop" id="sdrop"></div>
+      </div>
+      <div class="tb-right">
+        <span class="tb-label">Уровень:</span><div class="seg" id="lvSeg"></div>
+        <button class="icon-btn" id="rndBtn" title="Случайный вопрос (R)">🎲</button>
+        <button class="icon-btn" id="themeBtn" title="Светлая / тёмная тема">🌙</button>
+      </div>
+    </div>
+    <div id="content"></div>
+  </main>
+</div>
+
+<div class="lightbox" id="lb">
+  <div class="lb-stage" id="lbStage"><img id="lbImg" alt=""></div>
+  <div class="lb-bar" id="lbInfo"></div>
+  <button class="lb-btn lb-prev" id="lbPrev">‹</button><button class="lb-btn lb-next" id="lbNext">›</button>
+  <button class="lb-close" id="lbClose">✕</button>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="assets/vendor/highlight.min.js"></script>
+<script src="assets/vendor/dockerfile.min.js"></script>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>

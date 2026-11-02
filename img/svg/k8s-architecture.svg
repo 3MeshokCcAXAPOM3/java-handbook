@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 620" font-family="Segoe UI, Inter, Arial, sans-serif">
+  <rect width="960" height="620" fill="#ffffff"/>
+  <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#6b6f78"/></marker></defs>
+  <text x="480" y="38" text-anchor="middle" font-size="24" font-weight="700" fill="#24262b">Кластер Kubernetes и путь трафика к сервису</text>
+
+  <!-- control plane -->
+  <rect x="24" y="60" width="912" height="140" rx="16" fill="#e9edfe" stroke="#4f6bed" stroke-width="1.5"/>
+  <text x="44" y="86" font-size="15" font-weight="700" fill="#3149c4">Control plane</text>
+  <g text-anchor="middle">
+    <rect x="44" y="100" width="180" height="84" rx="12" fill="#4f6bed"/><text x="134" y="132" font-size="14" font-weight="700" fill="#fff">kube-apiserver</text><text x="134" y="152" font-size="12" fill="#e9edfe">единая точка входа,</text><text x="134" y="168" font-size="12" fill="#e9edfe">kubectl → REST API</text>
+    <rect x="240" y="100" width="150" height="84" rx="12" fill="#fff" stroke="#4f6bed"/><text x="315" y="132" font-size="14" font-weight="700" fill="#24262b">etcd</text><text x="315" y="152" font-size="12" fill="#24262b">состояние кластера</text><text x="315" y="168" font-size="12" fill="#6b6f78">Raft</text>
+    <rect x="406" y="100" width="150" height="84" rx="12" fill="#fff" stroke="#4f6bed"/><text x="481" y="132" font-size="14" font-weight="700" fill="#24262b">scheduler</text><text x="481" y="152" font-size="12" fill="#24262b">выбирает узел</text><text x="481" y="168" font-size="12" fill="#24262b">для пода</text>
+    <rect x="572" y="100" width="190" height="84" rx="12" fill="#fff" stroke="#4f6bed"/><text x="667" y="132" font-size="14" font-weight="700" fill="#24262b">controller-manager</text><text x="667" y="152" font-size="12" fill="#24262b">приводит факт к желаемому:</text><text x="667" y="168" font-size="12" fill="#24262b">Deployment, ReplicaSet…</text>
+    <rect x="778" y="100" width="142" height="84" rx="12" fill="#fff" stroke="#4f6bed"/><text x="849" y="132" font-size="14" font-weight="700" fill="#24262b">cloud-</text><text x="849" y="150" font-size="14" font-weight="700" fill="#24262b">controller</text><text x="849" y="168" font-size="12" fill="#24262b">диски, балансировщики</text>
+  </g>
+
+  <!-- nodes -->
+  <g>
+    <rect x="24" y="226" width="440" height="250" rx="16" fill="#f6f5f1" stroke="#9a9ea6" stroke-width="1.5"/>
+    <text x="44" y="252" font-size="15" font-weight="700" fill="#24262b">Worker node 1</text>
+    <rect x="44" y="264" width="190" height="34" rx="8" fill="#fff" stroke="#9a9ea6"/><text x="139" y="286" text-anchor="middle" font-size="12.5" fill="#24262b">kubelet · containerd</text>
+    <rect x="244" y="264" width="200" height="34" rx="8" fill="#fff" stroke="#9a9ea6"/><text x="344" y="286" text-anchor="middle" font-size="12.5" fill="#24262b">kube-proxy / CNI (Cilium)</text>
+    <rect x="44" y="314" width="190" height="142" rx="12" fill="#e3f5ec" stroke="#1f9d6b"/>
+    <text x="139" y="338" text-anchor="middle" font-size="13.5" font-weight="700" fill="#137a52">Pod orders-7d9f</text>
+    <rect x="58" y="350" width="162" height="40" rx="8" fill="#1f9d6b"/><text x="139" y="375" text-anchor="middle" font-size="12.5" fill="#fff">контейнер app :8080</text>
+    <rect x="58" y="398" width="162" height="40" rx="8" fill="#9ad4b8"/><text x="139" y="423" text-anchor="middle" font-size="12.5" fill="#24262b">sidecar (необязательно)</text>
+    <rect x="244" y="314" width="200" height="142" rx="12" fill="#fcf0dc" stroke="#d98a1c"/>
+    <text x="344" y="338" text-anchor="middle" font-size="13.5" font-weight="700" fill="#9a5c06">Pod postgres-0</text>
+    <text x="344" y="362" text-anchor="middle" font-size="12" fill="#24262b">StatefulSet</text>
+    <rect x="258" y="378" width="172" height="58" rx="8" fill="#fff" stroke="#d98a1c"/><text x="344" y="402" text-anchor="middle" font-size="12" fill="#24262b">PersistentVolumeClaim</text><text x="344" y="420" text-anchor="middle" font-size="12" fill="#6b6f78">диск переживает под</text>
+
+    <rect x="496" y="226" width="440" height="250" rx="16" fill="#f6f5f1" stroke="#9a9ea6" stroke-width="1.5"/>
+    <text x="516" y="252" font-size="15" font-weight="700" fill="#24262b">Worker node 2</text>
+    <rect x="516" y="264" width="190" height="34" rx="8" fill="#fff" stroke="#9a9ea6"/><text x="611" y="286" text-anchor="middle" font-size="12.5" fill="#24262b">kubelet · containerd</text>
+    <rect x="716" y="264" width="200" height="34" rx="8" fill="#fff" stroke="#9a9ea6"/><text x="816" y="286" text-anchor="middle" font-size="12.5" fill="#24262b">kube-proxy / CNI (Cilium)</text>
+    <rect x="516" y="314" width="190" height="142" rx="12" fill="#e3f5ec" stroke="#1f9d6b"/>
+    <text x="611" y="338" text-anchor="middle" font-size="13.5" font-weight="700" fill="#137a52">Pod orders-2b1c</text>
+    <rect x="530" y="350" width="162" height="40" rx="8" fill="#1f9d6b"/><text x="611" y="375" text-anchor="middle" font-size="12.5" fill="#fff">контейнер app :8080</text>
+    <text x="611" y="414" text-anchor="middle" font-size="12" fill="#24262b">readiness — получает</text>
+    <text x="611" y="430" text-anchor="middle" font-size="12" fill="#24262b">трафик только готовый</text>
+    <rect x="716" y="314" width="200" height="142" rx="12" fill="#fbe6ed" stroke="#c2456b"/>
+    <text x="816" y="338" text-anchor="middle" font-size="13.5" font-weight="700" fill="#a3304f">DaemonSet</text>
+    <text x="816" y="362" text-anchor="middle" font-size="12" fill="#24262b">по поду на каждом узле:</text>
+    <text x="816" y="380" text-anchor="middle" font-size="12" fill="#24262b">сбор логов (Fluent Bit),</text>
+    <text x="816" y="398" text-anchor="middle" font-size="12" fill="#24262b">node-exporter</text>
+  </g>
+  <line x1="134" y1="184" x2="134" y2="222" stroke="#6b6f78" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="134" y1="184" x2="611" y2="222" stroke="#6b6f78" stroke-width="2" marker-end="url(#a)"/>
+  <text x="636" y="216" font-size="12" fill="#6b6f78">kubelet получает задания от API server</text>
+
+  <!-- трафик -->
+  <rect x="24" y="500" width="912" height="106" rx="16" fill="#fcf0dc" stroke="#d98a1c"/>
+  <text x="44" y="526" font-size="15" font-weight="700" fill="#9a5c06">Путь запроса</text>
+  <g font-size="13" text-anchor="middle">
+    <rect x="44" y="540" width="140" height="48" rx="10" fill="#fff" stroke="#d98a1c"/><text x="114" y="569" fill="#24262b">Клиент</text>
+    <rect x="216" y="540" width="200" height="48" rx="10" fill="#fff" stroke="#d98a1c"/><text x="316" y="560" fill="#24262b" font-weight="700">Ingress / Gateway API</text><text x="316" y="578" fill="#6b6f78" font-size="12">TLS, маршрут по хосту и пути</text>
+    <rect x="448" y="540" width="200" height="48" rx="10" fill="#fff" stroke="#d98a1c"/><text x="548" y="560" fill="#24262b" font-weight="700">Service orders</text><text x="548" y="578" fill="#6b6f78" font-size="12">ClusterIP, DNS-имя</text>
+    <rect x="680" y="540" width="236" height="48" rx="10" fill="#1f9d6b"/><text x="798" y="560" fill="#fff" font-weight="700">готовые поды orders</text><text x="798" y="578" fill="#e3f5ec" font-size="12">балансировка по EndpointSlice</text>
+  </g>
+  <line x1="184" y1="564" x2="212" y2="564" stroke="#6b6f78" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="416" y1="564" x2="444" y2="564" stroke="#6b6f78" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="648" y1="564" x2="676" y2="564" stroke="#6b6f78" stroke-width="2" marker-end="url(#a)"/>
+</svg>

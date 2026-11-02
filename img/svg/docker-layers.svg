@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 580" font-family="Segoe UI, Inter, Arial, sans-serif">
+  <rect width="960" height="580" fill="#ffffff"/>
+  <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#6b6f78"/></marker></defs>
+  <text x="480" y="38" text-anchor="middle" font-size="24" font-weight="700" fill="#24262b">Образ, слои и контейнер Spring Boot-приложения</text>
+
+  <!-- dockerfile -->
+  <rect x="24" y="64" width="330" height="330" rx="14" fill="#24262b"/>
+  <text x="44" y="92" font-size="13" font-weight="700" fill="#9aa0a6">Dockerfile (финальная стадия)</text>
+  <g font-size="12.5" font-family="Consolas, monospace">
+    <text x="44" y="126" fill="#c678dd">FROM <tspan fill="#e5c07b">eclipse-temurin:21-jre</tspan></text>
+    <text x="44" y="160" fill="#c678dd">COPY <tspan fill="#d6d9e0">dependencies/ ./</tspan></text>
+    <text x="44" y="194" fill="#c678dd">COPY <tspan fill="#d6d9e0">spring-boot-loader/ ./</tspan></text>
+    <text x="44" y="228" fill="#c678dd">COPY <tspan fill="#d6d9e0">snapshot-dependencies/ ./</tspan></text>
+    <text x="44" y="262" fill="#c678dd">COPY <tspan fill="#d6d9e0">application/ ./</tspan></text>
+    <text x="44" y="296" fill="#c678dd">USER <tspan fill="#d6d9e0">1001</tspan></text>
+    <text x="44" y="330" fill="#c678dd">ENTRYPOINT <tspan fill="#98c379">["java", "…JarLauncher"]</tspan></text>
+  </g>
+  <text x="44" y="372" font-size="12" fill="#9aa0a6">каждая инструкция COPY / RUN — отдельный слой</text>
+
+  <!-- слои -->
+  <text x="560" y="88" text-anchor="middle" font-size="15" font-weight="700" fill="#24262b">Слои образа (снизу вверх)</text>
+  <g text-anchor="middle" font-size="13">
+    <rect x="390" y="104" width="340" height="40" rx="8" fill="#fbe6ed" stroke="#c2456b" stroke-dasharray="6 4"/><text x="560" y="129" fill="#a3304f" font-weight="700">записываемый слой контейнера</text>
+    <rect x="390" y="156" width="340" height="38" rx="8" fill="#1f9d6b"/><text x="560" y="180" fill="#fff">application — ваш код · ~1 МБ · меняется всегда</text>
+    <rect x="390" y="198" width="340" height="38" rx="8" fill="#5cb98f"/><text x="560" y="222" fill="#fff">snapshot-dependencies · иногда</text>
+    <rect x="390" y="240" width="340" height="38" rx="8" fill="#7d93f2"/><text x="560" y="264" fill="#fff">spring-boot-loader · очень редко</text>
+    <rect x="390" y="282" width="340" height="46" rx="8" fill="#4f6bed"/><text x="560" y="303" fill="#fff">dependencies — библиотеки</text><text x="560" y="320" fill="#e9edfe" font-size="12">~80 МБ · меняются редко</text>
+    <rect x="390" y="332" width="340" height="62" rx="8" fill="#6b6f78"/><text x="560" y="358" fill="#fff">базовый образ: ОС + JRE</text><text x="560" y="378" fill="#e4e1d8" font-size="12">~200 МБ · общий для многих образов</text>
+  </g>
+  <line x1="354" y1="230" x2="386" y2="230" stroke="#6b6f78" stroke-width="2" marker-end="url(#a)"/>
+
+  <!-- контейнеры -->
+  <text x="840" y="88" text-anchor="middle" font-size="15" font-weight="700" fill="#24262b">Контейнеры</text>
+  <rect x="756" y="104" width="180" height="64" rx="10" fill="#e3f5ec" stroke="#1f9d6b"/><text x="846" y="132" text-anchor="middle" font-size="13" font-weight="700" fill="#137a52">orders-1</text><text x="846" y="152" text-anchor="middle" font-size="11.5" fill="#24262b">свой записываемый слой</text>
+  <rect x="756" y="180" width="180" height="64" rx="10" fill="#e3f5ec" stroke="#1f9d6b"/><text x="846" y="208" text-anchor="middle" font-size="13" font-weight="700" fill="#137a52">orders-2</text><text x="846" y="228" text-anchor="middle" font-size="11.5" fill="#24262b">свой записываемый слой</text>
+  <text x="846" y="276" text-anchor="middle" font-size="12" fill="#24262b">слои образа общие</text>
+  <text x="846" y="293" text-anchor="middle" font-size="12" fill="#24262b">и только для чтения;</text>
+  <text x="846" y="310" text-anchor="middle" font-size="12" fill="#24262b">изоляция — namespaces,</text>
+  <text x="846" y="327" text-anchor="middle" font-size="12" fill="#24262b">ресурсы — cgroups</text>
+
+  <!-- выводы -->
+  <rect x="24" y="414" width="912" height="152" rx="14" fill="#f6f5f1"/>
+  <text x="44" y="440" font-size="15" font-weight="700" fill="#24262b">Почему слои важны</text>
+  <g font-size="12.5" fill="#24262b">
+    <text x="44" y="466">• Изменился один слой → пересобираются и выгружаются в реестр только он и слои выше. Изменили код — уходит ~1 МБ, а не 300 МБ.</text>
+    <text x="44" y="490">• Поэтому редко меняющееся — ниже, часто меняющееся — выше; в стадии сборки сначала pom.xml и зависимости, потом исходники.</text>
+    <text x="44" y="514">• Слои раскладывает Spring Boot: java -Djarmode=tools -jar app.jar extract --layers. Buildpacks и Jib делают это автоматически.</text>
+    <text x="44" y="538">• Данные в записываемом слое исчезают вместе с контейнером — для данных нужны тома (volumes).</text>
+    <text x="44" y="558" fill="#6b6f78">Посмотреть слои: docker history image · dive image</text>
+  </g>
+</svg>

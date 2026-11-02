@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" font-family="Segoe UI, Inter, Arial, sans-serif">
+  <rect width="960" height="600" fill="#ffffff"/>
+  <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#6b6f78"/></marker></defs>
+  <text x="480" y="38" text-anchor="middle" font-size="24" font-weight="700" fill="#24262b">Жизненный цикл сущности JPA</text>
+  <text x="480" y="62" text-anchor="middle" font-size="14" fill="#6b6f78">Persistence context (кеш первого уровня) отслеживает только managed-объекты</text>
+
+  <rect x="30" y="220" width="190" height="96" rx="16" fill="#f6f5f1" stroke="#9a9ea6" stroke-width="2"/>
+  <text x="125" y="258" text-anchor="middle" font-size="19" font-weight="700" fill="#24262b">NEW</text>
+  <text x="125" y="280" text-anchor="middle" font-size="12.5" fill="#6b6f78">(transient)</text>
+  <text x="125" y="298" text-anchor="middle" font-size="12.5" fill="#24262b">new Order() — нет id</text>
+
+  <rect x="350" y="200" width="260" height="136" rx="18" fill="#e3f5ec" stroke="#1f9d6b" stroke-width="2.5"/>
+  <text x="480" y="236" text-anchor="middle" font-size="21" font-weight="700" fill="#137a52">MANAGED</text>
+  <text x="480" y="260" text-anchor="middle" font-size="12.5" fill="#24262b">в persistence context;</text>
+  <text x="480" y="278" text-anchor="middle" font-size="12.5" fill="#24262b">изменения полей попадут в БД</text>
+  <text x="480" y="296" text-anchor="middle" font-size="12.5" fill="#24262b">при flush (dirty checking)</text>
+  <text x="480" y="318" text-anchor="middle" font-size="12" fill="#6b6f78">find(), JPQL — сразу managed</text>
+
+  <rect x="740" y="120" width="190" height="96" rx="16" fill="#e9edfe" stroke="#4f6bed" stroke-width="2"/>
+  <text x="835" y="158" text-anchor="middle" font-size="19" font-weight="700" fill="#3149c4">DETACHED</text>
+  <text x="835" y="180" text-anchor="middle" font-size="12.5" fill="#24262b">есть id, но контекст</text>
+  <text x="835" y="198" text-anchor="middle" font-size="12.5" fill="#24262b">закрыт или очищен</text>
+
+  <rect x="740" y="330" width="190" height="96" rx="16" fill="#fbe6ed" stroke="#c2456b" stroke-width="2"/>
+  <text x="835" y="368" text-anchor="middle" font-size="19" font-weight="700" fill="#a3304f">REMOVED</text>
+  <text x="835" y="390" text-anchor="middle" font-size="12.5" fill="#24262b">помечена к удалению,</text>
+  <text x="835" y="408" text-anchor="middle" font-size="12.5" fill="#24262b">DELETE при flush</text>
+
+  <line x1="220" y1="268" x2="346" y2="268" stroke="#6b6f78" stroke-width="2" marker-end="url(#a)"/>
+  <text x="283" y="256" text-anchor="middle" font-size="13.5" font-weight="700" fill="#24262b" font-family="Consolas, monospace">persist()</text>
+
+  <path d="M610 230 C 680 200, 700 180, 736 172" fill="none" stroke="#6b6f78" stroke-width="2" marker-end="url(#a)"/>
+  <text x="730" y="142" text-anchor="end" font-size="13" fill="#24262b" font-family="Consolas, monospace">detach(), clear(),</text>
+  <text x="730" y="159" text-anchor="end" font-size="13" fill="#24262b">закрытие контекста</text>
+  <path d="M740 196 C 690 240, 660 260, 614 262" fill="none" stroke="#1f9d6b" stroke-width="2" marker-end="url(#a)"/>
+  <text x="664" y="270" font-size="13" fill="#137a52" font-weight="700" font-family="Consolas, monospace">merge()</text>
+  <text x="664" y="287" font-size="11.5" fill="#6b6f78">вернёт новую managed-копию</text>
+
+  <path d="M610 310 C 680 340, 700 360, 736 372" fill="none" stroke="#6b6f78" stroke-width="2" marker-end="url(#a)"/>
+  <text x="626" y="372" font-size="13" fill="#24262b" font-family="Consolas, monospace">remove()</text>
+  <path d="M740 410 C 680 430, 560 420, 520 340" fill="none" stroke="#1f9d6b" stroke-width="2" marker-end="url(#a)"/>
+  <text x="560" y="440" font-size="13" fill="#137a52" font-family="Consolas, monospace">persist() — отменить удаление</text>
+
+  <path d="M480 336 L 480 470" fill="none" stroke="#9a9ea6" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#a)"/>
+  <rect x="330" y="474" width="300" height="46" rx="10" fill="#fcf0dc" stroke="#d98a1c"/>
+  <text x="480" y="494" text-anchor="middle" font-size="13" font-weight="700" fill="#9a5c06">flush / commit</text>
+  <text x="480" y="511" text-anchor="middle" font-size="12.5" fill="#24262b">INSERT, UPDATE, DELETE уходят в БД</text>
+
+  <rect x="30" y="540" width="900" height="46" rx="10" fill="#f6f5f1"/>
+  <text x="480" y="560" text-anchor="middle" font-size="13" fill="#24262b">persist() для DETACHED — исключение (EntityExistsException); merge() для NEW — вставка копии. refresh() перечитывает managed-сущность из БД.</text>
+  <text x="480" y="578" text-anchor="middle" font-size="13" fill="#24262b">Ленивые связи DETACHED-сущности недоступны → LazyInitializationException.</text>
+</svg>

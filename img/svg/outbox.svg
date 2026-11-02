@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 580" font-family="Segoe UI, Inter, Arial, sans-serif">
+  <rect width="960" height="580" fill="#ffffff"/>
+  <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#6b6f78"/></marker></defs>
+  <text x="480" y="38" text-anchor="middle" font-size="24" font-weight="700" fill="#24262b">Transactional Outbox и идемпотентный потребитель</text>
+
+  <!-- проблема -->
+  <rect x="24" y="58" width="912" height="72" rx="14" fill="#fbe6ed" stroke="#c2456b"/>
+  <text x="44" y="84" font-size="14.5" font-weight="700" fill="#a3304f">Проблема двойной записи</text>
+  <text x="44" y="106" font-size="13" fill="#24262b">save(order); kafka.send(event) — если сервис упадёт между ними, БД и брокер разойдутся: заказ есть, события нет (или наоборот).</text>
+  <text x="44" y="122" font-size="13" fill="#24262b">Распределённой транзакции между PostgreSQL и Kafka нет.</text>
+
+  <!-- сервис -->
+  <rect x="24" y="148" width="300" height="250" rx="16" fill="#e9edfe" stroke="#4f6bed"/>
+  <text x="174" y="174" text-anchor="middle" font-size="15" font-weight="700" fill="#3149c4">Order service</text>
+  <rect x="44" y="190" width="260" height="120" rx="10" fill="#fff" stroke="#4f6bed"/>
+  <text x="58" y="212" font-size="12.5" font-weight="700" fill="#24262b">одна локальная транзакция:</text>
+  <text x="58" y="236" font-size="12" fill="#24262b" font-family="Consolas, monospace">BEGIN;</text>
+  <text x="58" y="256" font-size="12" fill="#24262b" font-family="Consolas, monospace">INSERT INTO orders …;</text>
+  <text x="58" y="276" font-size="12" fill="#24262b" font-family="Consolas, monospace">INSERT INTO outbox …;</text>
+  <text x="58" y="296" font-size="12" fill="#24262b" font-family="Consolas, monospace">COMMIT;</text>
+  <text x="174" y="338" text-anchor="middle" font-size="12.5" fill="#24262b">либо записано и то и другое,</text>
+  <text x="174" y="356" text-anchor="middle" font-size="12.5" fill="#24262b">либо ничего</text>
+  <line x1="324" y1="250" x2="366" y2="250" stroke="#6b6f78" stroke-width="2" marker-end="url(#a)"/>
+
+  <!-- БД -->
+  <rect x="370" y="148" width="230" height="250" rx="16" fill="#e3f5ec" stroke="#1f9d6b"/>
+  <text x="485" y="174" text-anchor="middle" font-size="15" font-weight="700" fill="#137a52">PostgreSQL</text>
+  <rect x="390" y="190" width="190" height="70" rx="10" fill="#fff" stroke="#1f9d6b"/>
+  <text x="485" y="214" text-anchor="middle" font-size="13" font-weight="700" fill="#24262b">orders</text>
+  <text x="485" y="236" text-anchor="middle" font-size="12" fill="#6b6f78">id 42, status NEW</text>
+  <rect x="390" y="272" width="190" height="104" rx="10" fill="#fff" stroke="#d98a1c" stroke-width="2"/>
+  <text x="485" y="296" text-anchor="middle" font-size="13" font-weight="700" fill="#9a5c06">outbox</text>
+  <text x="404" y="318" font-size="11.5" fill="#24262b" font-family="Consolas, monospace">id, aggregate_id=42,</text>
+  <text x="404" y="336" font-size="11.5" fill="#24262b" font-family="Consolas, monospace">type=OrderCreated,</text>
+  <text x="404" y="354" font-size="11.5" fill="#24262b" font-family="Consolas, monospace">payload, sent=false</text>
+
+  <!-- relay -->
+  <line x1="600" y1="324" x2="640" y2="324" stroke="#6b6f78" stroke-width="2" marker-end="url(#a)"/>
+  <rect x="644" y="148" width="292" height="250" rx="16" fill="#fcf0dc" stroke="#d98a1c"/>
+  <text x="790" y="174" text-anchor="middle" font-size="15" font-weight="700" fill="#9a5c06">Доставка в брокер</text>
+  <text x="662" y="202" font-size="12.5" font-weight="700" fill="#24262b">Вариант 1: poller</text>
+  <text x="662" y="221" font-size="12" fill="#24262b">планировщик читает неотправленные</text>
+  <text x="662" y="238" font-size="12" fill="#24262b">(FOR UPDATE SKIP LOCKED), шлёт,</text>
+  <text x="662" y="255" font-size="12" fill="#24262b">помечает sent = true</text>
+  <text x="662" y="284" font-size="12.5" font-weight="700" fill="#24262b">Вариант 2: CDC</text>
+  <text x="662" y="303" font-size="12" fill="#24262b">Debezium читает WAL базы</text>
+  <text x="662" y="320" font-size="12" fill="#24262b">и публикует записи outbox</text>
+  <rect x="662" y="340" width="256" height="42" rx="10" fill="#24262b"/>
+  <text x="790" y="366" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">Kafka · топик orders</text>
+
+  <!-- потребитель -->
+  <rect x="24" y="416" width="912" height="150" rx="16" fill="#f6f5f1"/>
+  <text x="44" y="442" font-size="15" font-weight="700" fill="#24262b">Доставка at-least-once → потребитель обязан быть идемпотентным</text>
+  <g font-size="12.5" fill="#24262b">
+    <text x="44" y="468">• сообщение может прийти повторно (ретрай отправки, ребалансировка до коммита offset)</text>
+    <text x="44" y="490">• таблица processed_messages (Inbox): id события сохраняется в той же транзакции, что и бизнес-изменение;</text>
+    <text x="58" y="508">повтор → нарушение уникальности → пропустить</text>
+    <text x="44" y="530">• или естественная идемпотентность: UPSERT, «установить статус», а не «прибавить»</text>
+    <text x="44" y="552">• порядок по одному агрегату — ключ сообщения = aggregate_id (одна партиция)</text>
+  </g>
+</svg>

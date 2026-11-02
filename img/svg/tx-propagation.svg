@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" font-family="Segoe UI, Inter, Arial, sans-serif">
+  <rect width="960" height="600" fill="#ffffff"/>
+  <text x="480" y="38" text-anchor="middle" font-size="24" font-weight="700" fill="#24262b">@Transactional(propagation = …): что произойдёт при вызове</text>
+
+  <text x="220" y="80" text-anchor="middle" font-size="14" font-weight="700" fill="#6b6f78">PROPAGATION</text>
+  <rect x="380" y="58" width="270" height="34" rx="8" fill="#e9edfe"/>
+  <text x="515" y="81" text-anchor="middle" font-size="14" font-weight="700" fill="#3149c4">внешняя транзакция ЕСТЬ</text>
+  <rect x="660" y="58" width="270" height="34" rx="8" fill="#f6f5f1"/>
+  <text x="795" y="81" text-anchor="middle" font-size="14" font-weight="700" fill="#24262b">транзакции НЕТ</text>
+
+  <g font-size="13.5">
+    <!-- REQUIRED -->
+    <rect x="30" y="100" width="340" height="56" rx="10" fill="#f6f5f1"/>
+    <text x="46" y="124" font-size="15" font-weight="700" fill="#24262b" font-family="Consolas, monospace">REQUIRED</text>
+    <text x="46" y="144" font-size="12.5" fill="#6b6f78">по умолчанию</text>
+    <rect x="380" y="100" width="270" height="56" rx="10" fill="#4f6bed"/><text x="515" y="133" text-anchor="middle" fill="#fff" font-weight="600">присоединиться</text>
+    <rect x="660" y="100" width="270" height="56" rx="10" fill="#1f9d6b"/><text x="795" y="133" text-anchor="middle" fill="#fff" font-weight="600">создать новую</text>
+    <!-- REQUIRES_NEW -->
+    <rect x="30" y="162" width="340" height="56" rx="10" fill="#f6f5f1"/>
+    <text x="46" y="186" font-size="15" font-weight="700" fill="#24262b" font-family="Consolas, monospace">REQUIRES_NEW</text>
+    <text x="46" y="206" font-size="12.5" fill="#6b6f78">аудит, журналы — независимый коммит</text>
+    <rect x="380" y="162" width="270" height="56" rx="10" fill="#1f9d6b"/><text x="515" y="186" text-anchor="middle" fill="#fff" font-weight="600">приостановить внешнюю,</text><text x="515" y="205" text-anchor="middle" fill="#fff" font-weight="600">создать новую</text>
+    <rect x="660" y="162" width="270" height="56" rx="10" fill="#1f9d6b"/><text x="795" y="195" text-anchor="middle" fill="#fff" font-weight="600">создать новую</text>
+    <!-- NESTED -->
+    <rect x="30" y="224" width="340" height="56" rx="10" fill="#f6f5f1"/>
+    <text x="46" y="248" font-size="15" font-weight="700" fill="#24262b" font-family="Consolas, monospace">NESTED</text>
+    <text x="46" y="268" font-size="12.5" fill="#6b6f78">частичный откат; только JDBC, не JPA</text>
+    <rect x="380" y="224" width="270" height="56" rx="10" fill="#d98a1c"/><text x="515" y="248" text-anchor="middle" fill="#fff" font-weight="600">точка сохранения (savepoint)</text><text x="515" y="267" text-anchor="middle" fill="#fff" font-weight="600">внутри внешней</text>
+    <rect x="660" y="224" width="270" height="56" rx="10" fill="#1f9d6b"/><text x="795" y="257" text-anchor="middle" fill="#fff" font-weight="600">создать новую</text>
+    <!-- SUPPORTS -->
+    <rect x="30" y="286" width="340" height="56" rx="10" fill="#f6f5f1"/>
+    <text x="46" y="310" font-size="15" font-weight="700" fill="#24262b" font-family="Consolas, monospace">SUPPORTS</text>
+    <text x="46" y="330" font-size="12.5" fill="#6b6f78">«как получится»</text>
+    <rect x="380" y="286" width="270" height="56" rx="10" fill="#4f6bed"/><text x="515" y="319" text-anchor="middle" fill="#fff" font-weight="600">присоединиться</text>
+    <rect x="660" y="286" width="270" height="56" rx="10" fill="#d6d2c6"/><text x="795" y="319" text-anchor="middle" fill="#24262b" font-weight="600">без транзакции</text>
+    <!-- MANDATORY -->
+    <rect x="30" y="348" width="340" height="56" rx="10" fill="#f6f5f1"/>
+    <text x="46" y="372" font-size="15" font-weight="700" fill="#24262b" font-family="Consolas, monospace">MANDATORY</text>
+    <text x="46" y="392" font-size="12.5" fill="#6b6f78">метод нельзя вызвать вне транзакции</text>
+    <rect x="380" y="348" width="270" height="56" rx="10" fill="#4f6bed"/><text x="515" y="381" text-anchor="middle" fill="#fff" font-weight="600">присоединиться</text>
+    <rect x="660" y="348" width="270" height="56" rx="10" fill="#c2456b"/><text x="795" y="381" text-anchor="middle" fill="#fff" font-weight="600">исключение</text>
+    <!-- NOT_SUPPORTED -->
+    <rect x="30" y="410" width="340" height="56" rx="10" fill="#f6f5f1"/>
+    <text x="46" y="434" font-size="15" font-weight="700" fill="#24262b" font-family="Consolas, monospace">NOT_SUPPORTED</text>
+    <text x="46" y="454" font-size="12.5" fill="#6b6f78">долгая работа без удержания соединения</text>
+    <rect x="380" y="410" width="270" height="56" rx="10" fill="#d6d2c6"/><text x="515" y="434" text-anchor="middle" fill="#24262b" font-weight="600">приостановить внешнюю,</text><text x="515" y="453" text-anchor="middle" fill="#24262b" font-weight="600">выполнить без транзакции</text>
+    <rect x="660" y="410" width="270" height="56" rx="10" fill="#d6d2c6"/><text x="795" y="443" text-anchor="middle" fill="#24262b" font-weight="600">без транзакции</text>
+    <!-- NEVER -->
+    <rect x="30" y="472" width="340" height="56" rx="10" fill="#f6f5f1"/>
+    <text x="46" y="496" font-size="15" font-weight="700" fill="#24262b" font-family="Consolas, monospace">NEVER</text>
+    <text x="46" y="516" font-size="12.5" fill="#6b6f78">транзакция запрещена</text>
+    <rect x="380" y="472" width="270" height="56" rx="10" fill="#c2456b"/><text x="515" y="505" text-anchor="middle" fill="#fff" font-weight="600">исключение</text>
+    <rect x="660" y="472" width="270" height="56" rx="10" fill="#d6d2c6"/><text x="795" y="505" text-anchor="middle" fill="#24262b" font-weight="600">без транзакции</text>
+  </g>
+  <text x="30" y="560" font-size="13.5" fill="#24262b"><tspan font-weight="700">Помните:</tspan> REQUIRED + исключение во внутреннем методе помечает всю транзакцию rollback-only → UnexpectedRollbackException при коммите.</text>
+  <text x="30" y="582" font-size="13.5" fill="#24262b">Вызов this.method() идёт мимо прокси — propagation не применяется. Откат по умолчанию только для RuntimeException и Error.</text>
+</svg>

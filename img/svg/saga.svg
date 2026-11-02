@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 620" font-family="Segoe UI, Inter, Arial, sans-serif">
+  <rect width="960" height="620" fill="#ffffff"/>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#6b6f78"/></marker>
+    <marker id="r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#c2456b"/></marker>
+  </defs>
+  <text x="480" y="38" text-anchor="middle" font-size="24" font-weight="700" fill="#24262b">Saga: распределённая операция без общей транзакции</text>
+  <text x="480" y="62" text-anchor="middle" font-size="14" fill="#6b6f78">Цепочка локальных транзакций; при сбое — компенсирующие действия в обратном порядке</text>
+
+  <!-- хореография -->
+  <rect x="24" y="80" width="912" height="230" rx="16" fill="#e9edfe"/>
+  <text x="44" y="108" font-size="16" font-weight="700" fill="#3149c4">Хореография — сервисы реагируют на события друг друга</text>
+  <g text-anchor="middle">
+    <rect x="44" y="130" width="170" height="60" rx="12" fill="#4f6bed"/><text x="129" y="157" font-size="14" font-weight="700" fill="#fff">Order</text><text x="129" y="177" font-size="12" fill="#e9edfe">заказ PENDING</text>
+    <rect x="290" y="130" width="170" height="60" rx="12" fill="#4f6bed"/><text x="375" y="157" font-size="14" font-weight="700" fill="#fff">Payment</text><text x="375" y="177" font-size="12" fill="#e9edfe">списать деньги</text>
+    <rect x="536" y="130" width="170" height="60" rx="12" fill="#4f6bed"/><text x="621" y="157" font-size="14" font-weight="700" fill="#fff">Inventory</text><text x="621" y="177" font-size="12" fill="#e9edfe">зарезервировать</text>
+    <rect x="782" y="130" width="134" height="60" rx="12" fill="#1f9d6b"/><text x="849" y="157" font-size="14" font-weight="700" fill="#fff">Order</text><text x="849" y="177" font-size="12" fill="#e3f5ec">CONFIRMED</text>
+  </g>
+  <g font-size="11.5" fill="#24262b" text-anchor="middle">
+    <line x1="214" y1="152" x2="286" y2="152" stroke="#6b6f78" stroke-width="2" marker-end="url(#a)"/><text x="250" y="144">OrderCreated</text>
+    <line x1="460" y1="152" x2="532" y2="152" stroke="#6b6f78" stroke-width="2" marker-end="url(#a)"/><text x="496" y="144">PaymentDone</text>
+    <line x1="706" y1="152" x2="778" y2="152" stroke="#6b6f78" stroke-width="2" marker-end="url(#a)"/><text x="742" y="144">Reserved</text>
+  </g>
+  <path d="M621 190 C 621 240, 400 240, 380 196" fill="none" stroke="#c2456b" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#r)"/>
+  <path d="M375 190 C 375 260, 150 260, 134 196" fill="none" stroke="#c2456b" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#r)"/>
+  <text x="520" y="242" font-size="12.5" fill="#a3304f" font-weight="700">нет товара → OutOfStock → возврат денег</text>
+  <text x="140" y="270" font-size="12.5" fill="#a3304f" font-weight="700">PaymentRefunded → заказ CANCELLED</text>
+  <text x="44" y="296" font-size="12.5" fill="#24262b"><tspan font-weight="700">+</tspan> слабая связанность, нет центра  <tspan font-weight="700">−</tspan> сложно увидеть весь процесс; легко получить циклы событий</text>
+
+  <!-- оркестрация -->
+  <rect x="24" y="326" width="912" height="214" rx="16" fill="#e3f5ec"/>
+  <text x="44" y="354" font-size="16" font-weight="700" fill="#137a52">Оркестрация — координатор явно командует шагами</text>
+  <rect x="360" y="370" width="240" height="64" rx="12" fill="#1f9d6b"/>
+  <text x="480" y="398" text-anchor="middle" font-size="15" font-weight="700" fill="#fff">Saga-оркестратор</text>
+  <text x="480" y="418" text-anchor="middle" font-size="12" fill="#e3f5ec">хранит состояние саги в БД</text>
+  <g text-anchor="middle">
+    <rect x="80" y="460" width="190" height="56" rx="12" fill="#fff" stroke="#1f9d6b"/><text x="175" y="484" font-size="13.5" font-weight="700" fill="#24262b">Payment</text><text x="175" y="503" font-size="11.5" fill="#6b6f78">charge / refund</text>
+    <rect x="385" y="460" width="190" height="56" rx="12" fill="#fff" stroke="#1f9d6b"/><text x="480" y="484" font-size="13.5" font-weight="700" fill="#24262b">Inventory</text><text x="480" y="503" font-size="11.5" fill="#6b6f78">reserve / release</text>
+    <rect x="690" y="460" width="190" height="56" rx="12" fill="#fff" stroke="#1f9d6b"/><text x="785" y="484" font-size="13.5" font-weight="700" fill="#24262b">Delivery</text><text x="785" y="503" font-size="11.5" fill="#6b6f78">schedule / cancel</text>
+  </g>
+  <line x1="400" y1="434" x2="200" y2="458" stroke="#6b6f78" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="480" y1="434" x2="480" y2="456" stroke="#6b6f78" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="560" y1="434" x2="760" y2="458" stroke="#6b6f78" stroke-width="2" marker-end="url(#a)"/>
+  <text x="640" y="392" font-size="12.5" fill="#24262b"><tspan font-weight="700">+</tspan> процесс виден в одном месте,</text>
+  <text x="640" y="410" font-size="12.5" fill="#24262b">проще таймауты и отладка</text>
+  <text x="44" y="392" font-size="12.5" fill="#24262b"><tspan font-weight="700">−</tspan> оркестратор — ещё один</text>
+  <text x="44" y="410" font-size="12.5" fill="#24262b">сервис, риск «умного центра»</text>
+
+  <rect x="24" y="556" width="912" height="52" rx="12" fill="#f6f5f1"/>
+  <text x="480" y="578" text-anchor="middle" font-size="13" fill="#24262b">Обязательно: идемпотентные шаги и компенсации, Outbox для надёжной отправки событий, промежуточные статусы (PENDING).</text>
+  <text x="480" y="597" text-anchor="middle" font-size="13" fill="#24262b">Изоляции нет: другие видят промежуточные состояния. Инструменты: Temporal, Camunda, Axon или своя state machine.</text>
+</svg>

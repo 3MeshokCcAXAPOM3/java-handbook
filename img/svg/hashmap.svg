@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" font-family="Segoe UI, Inter, Arial, sans-serif">
+  <rect width="960" height="600" fill="#ffffff"/>
+  <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#6b6f78"/></marker></defs>
+  <text x="480" y="38" text-anchor="middle" font-size="24" font-weight="700" fill="#24262b">Как устроена HashMap (Java 8+)</text>
+
+  <!-- вычисление индекса -->
+  <rect x="24" y="64" width="912" height="92" rx="14" fill="#e9edfe" stroke="#4f6bed"/>
+  <g font-size="14">
+    <text x="44" y="92" font-weight="700" fill="#3149c4">put("Анна", 30):</text>
+    <rect x="44" y="104" width="190" height="36" rx="8" fill="#fff" stroke="#9fb0f5"/><text x="139" y="127" text-anchor="middle" font-family="Consolas, monospace" fill="#24262b">h = key.hashCode()</text>
+    <line x1="234" y1="122" x2="262" y2="122" stroke="#6b6f78" stroke-width="2" marker-end="url(#a)"/>
+    <rect x="266" y="104" width="190" height="36" rx="8" fill="#fff" stroke="#9fb0f5"/><text x="361" y="127" text-anchor="middle" font-family="Consolas, monospace" fill="#24262b">h ^ (h &gt;&gt;&gt; 16)</text>
+    <line x1="456" y1="122" x2="484" y2="122" stroke="#6b6f78" stroke-width="2" marker-end="url(#a)"/>
+    <rect x="488" y="104" width="220" height="36" rx="8" fill="#fff" stroke="#9fb0f5"/><text x="598" y="127" text-anchor="middle" font-family="Consolas, monospace" fill="#24262b">i = (n - 1) &amp; hash</text>
+    <line x1="708" y1="122" x2="736" y2="122" stroke="#6b6f78" stroke-width="2" marker-end="url(#a)"/>
+    <rect x="740" y="104" width="180" height="36" rx="8" fill="#4f6bed"/><text x="830" y="127" text-anchor="middle" fill="#fff" font-weight="700">корзина № 5</text>
+    <text x="280" y="92" font-size="12.5" fill="#6b6f78">старшие биты подмешиваются к младшим</text>
+    <text x="600" y="92" font-size="12.5" fill="#6b6f78">n — степень двойки, это быстрый остаток</text>
+  </g>
+
+  <!-- массив корзин -->
+  <text x="40" y="190" font-size="14" font-weight="700" fill="#24262b">table[16]</text>
+  <g font-size="13" font-family="Consolas, monospace">
+    <rect x="40" y="200" width="70" height="30" rx="5" fill="#fff" stroke="#d6d2c6"/><text x="52" y="220" fill="#9a9ea6">0</text>
+    <rect x="40" y="232" width="70" height="30" rx="5" fill="#fff" stroke="#d6d2c6"/><text x="52" y="252" fill="#9a9ea6">1</text>
+    <rect x="40" y="264" width="70" height="30" rx="5" fill="#e3f5ec" stroke="#1f9d6b"/><text x="52" y="284" fill="#24262b">2</text>
+    <rect x="40" y="296" width="70" height="30" rx="5" fill="#fff" stroke="#d6d2c6"/><text x="52" y="316" fill="#9a9ea6">3</text>
+    <rect x="40" y="328" width="70" height="30" rx="5" fill="#fff" stroke="#d6d2c6"/><text x="52" y="348" fill="#9a9ea6">4</text>
+    <rect x="40" y="360" width="70" height="30" rx="5" fill="#e9edfe" stroke="#4f6bed" stroke-width="2"/><text x="52" y="380" fill="#24262b" font-weight="700">5</text>
+    <rect x="40" y="392" width="70" height="30" rx="5" fill="#fff" stroke="#d6d2c6"/><text x="52" y="412" fill="#9a9ea6">6</text>
+    <rect x="40" y="424" width="70" height="30" rx="5" fill="#fff" stroke="#d6d2c6"/><text x="52" y="444" fill="#9a9ea6">…</text>
+    <rect x="40" y="456" width="70" height="30" rx="5" fill="#fcf0dc" stroke="#d98a1c"/><text x="52" y="476" fill="#24262b">11</text>
+    <rect x="40" y="488" width="70" height="30" rx="5" fill="#fff" stroke="#d6d2c6"/><text x="52" y="508" fill="#9a9ea6">…15</text>
+  </g>
+
+  <!-- корзина 2: один узел -->
+  <line x1="110" y1="279" x2="150" y2="279" stroke="#6b6f78" stroke-width="2" marker-end="url(#a)"/>
+  <rect x="154" y="264" width="150" height="30" rx="7" fill="#1f9d6b"/><text x="229" y="284" text-anchor="middle" font-size="13" fill="#fff">"Олег" → 25</text>
+
+  <!-- корзина 5: список -->
+  <line x1="110" y1="375" x2="150" y2="375" stroke="#6b6f78" stroke-width="2" marker-end="url(#a)"/>
+  <rect x="154" y="360" width="150" height="30" rx="7" fill="#4f6bed"/><text x="229" y="380" text-anchor="middle" font-size="13" fill="#fff">"Борис" → 41</text>
+  <line x1="304" y1="375" x2="330" y2="375" stroke="#6b6f78" stroke-width="2" marker-end="url(#a)"/>
+  <rect x="334" y="360" width="150" height="30" rx="7" fill="#4f6bed"/><text x="409" y="380" text-anchor="middle" font-size="13" fill="#fff">"Анна" → 30</text>
+  <text x="154" y="412" font-size="12.5" fill="#24262b">коллизия: одинаковый индекс → связный список,</text>
+  <text x="154" y="429" font-size="12.5" fill="#24262b">нужный ключ ищется по equals()</text>
+
+  <!-- корзина 11: дерево -->
+  <line x1="110" y1="471" x2="190" y2="471" stroke="#6b6f78" stroke-width="2" marker-end="url(#a)"/>
+  <g font-size="12" text-anchor="middle">
+    <line x1="262" y1="458" x2="222" y2="500" stroke="#d98a1c" stroke-width="2"/>
+    <line x1="262" y1="458" x2="302" y2="500" stroke="#d98a1c" stroke-width="2"/>
+    <line x1="222" y1="512" x2="196" y2="548" stroke="#d98a1c" stroke-width="2"/>
+    <line x1="222" y1="512" x2="248" y2="548" stroke="#d98a1c" stroke-width="2"/>
+    <line x1="302" y1="512" x2="328" y2="548" stroke="#d98a1c" stroke-width="2"/>
+    <circle cx="262" cy="456" r="17" fill="#24262b"/><text x="262" y="460" fill="#fff">K4</text>
+    <circle cx="222" cy="506" r="17" fill="#c2456b"/><text x="222" y="510" fill="#fff">K2</text>
+    <circle cx="302" cy="506" r="17" fill="#24262b"/><text x="302" y="510" fill="#fff">K6</text>
+    <circle cx="196" cy="554" r="15" fill="#24262b"/><text x="196" y="558" fill="#fff">K1</text>
+    <circle cx="248" cy="554" r="15" fill="#24262b"/><text x="248" y="558" fill="#fff">K3</text>
+    <circle cx="328" cy="554" r="15" fill="#c2456b"/><text x="328" y="558" fill="#fff">K7</text>
+  </g>
+  <text x="360" y="474" font-size="12.5" fill="#24262b">≥ 8 узлов в корзине и ёмкость ≥ 64 →</text>
+  <text x="360" y="491" font-size="12.5" fill="#24262b">красно-чёрное дерево (TreeNode):</text>
+  <text x="360" y="508" font-size="12.5" fill="#24262b">поиск O(log n) вместо O(n);</text>
+  <text x="360" y="525" font-size="12.5" fill="#24262b">≤ 6 узлов — обратно в список</text>
+
+  <!-- справа: параметры -->
+  <rect x="640" y="180" width="296" height="398" rx="14" fill="#f6f5f1" stroke="#d6d2c6"/>
+  <text x="660" y="208" font-size="15" font-weight="700" fill="#24262b">Ключевые параметры</text>
+  <g font-size="13.5" fill="#24262b">
+    <text x="660" y="236"><tspan font-weight="700">Ёмкость</tspan> по умолчанию — 16,</text>
+    <text x="660" y="254">всегда степень двойки</text>
+    <text x="660" y="282"><tspan font-weight="700">Load factor</tspan> = 0.75:</text>
+    <text x="660" y="300">при size &gt; 16 × 0.75 = 12</text>
+    <text x="660" y="318">массив удваивается (resize),</text>
+    <text x="660" y="336">узлы раскладываются заново</text>
+    <text x="660" y="364"><tspan font-weight="700">get / put</tspan> — O(1) в среднем,</text>
+    <text x="660" y="382">O(log n) в худшем (Java 8+)</text>
+    <text x="660" y="410"><tspan font-weight="700">null-ключ</tspan> допустим один,</text>
+    <text x="660" y="428">лежит в корзине 0</text>
+    <text x="660" y="456"><tspan font-weight="700">Не потокобезопасна</tspan> —</text>
+    <text x="660" y="474">ConcurrentHashMap</text>
+    <text x="660" y="502"><tspan font-weight="700">Ключи</tspan> — неизменяемые,</text>
+    <text x="660" y="520">с корректными equals и hashCode;</text>
+    <text x="660" y="538">знаете размер заранее —</text>
+    <text x="660" y="556" font-family="Consolas, monospace" font-size="12.5">HashMap.newHashMap(n)</text>
+  </g>
+</svg>

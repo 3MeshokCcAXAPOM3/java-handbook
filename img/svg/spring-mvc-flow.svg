@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" font-family="Segoe UI, Inter, Arial, sans-serif">
+  <rect width="960" height="600" fill="#ffffff"/>
+  <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#6b6f78"/></marker></defs>
+  <text x="480" y="38" text-anchor="middle" font-size="24" font-weight="700" fill="#24262b">Путь HTTP-запроса в Spring MVC</text>
+
+  <rect x="24" y="80" width="130" height="64" rx="12" fill="#f6f5f1" stroke="#9a9ea6"/>
+  <text x="89" y="108" text-anchor="middle" font-size="15" font-weight="700" fill="#24262b">Клиент</text>
+  <text x="89" y="128" text-anchor="middle" font-size="12" fill="#6b6f78" font-family="Consolas, monospace">POST /orders</text>
+  <line x1="154" y1="112" x2="190" y2="112" stroke="#6b6f78" stroke-width="2" marker-end="url(#a)"/>
+
+  <rect x="194" y="70" width="190" height="84" rx="12" fill="#f6f5f1" stroke="#9a9ea6"/>
+  <text x="289" y="96" text-anchor="middle" font-size="14" font-weight="700" fill="#24262b">Tomcat</text>
+  <text x="289" y="116" text-anchor="middle" font-size="12" fill="#24262b">поток из пула (или</text>
+  <text x="289" y="133" text-anchor="middle" font-size="12" fill="#24262b">виртуальный поток)</text>
+  <line x1="384" y1="112" x2="420" y2="112" stroke="#6b6f78" stroke-width="2" marker-end="url(#a)"/>
+
+  <rect x="424" y="70" width="230" height="84" rx="12" fill="#fcf0dc" stroke="#d98a1c"/>
+  <text x="539" y="96" text-anchor="middle" font-size="14" font-weight="700" fill="#9a5c06">Filter chain</text>
+  <text x="539" y="116" text-anchor="middle" font-size="12" fill="#24262b">Spring Security, CORS,</text>
+  <text x="539" y="133" text-anchor="middle" font-size="12" fill="#24262b">логирование, трассировка</text>
+  <line x1="654" y1="112" x2="690" y2="112" stroke="#6b6f78" stroke-width="2" marker-end="url(#a)"/>
+
+  <rect x="694" y="62" width="242" height="100" rx="14" fill="#4f6bed"/>
+  <text x="815" y="94" text-anchor="middle" font-size="16" font-weight="700" fill="#fff">DispatcherServlet</text>
+  <text x="815" y="116" text-anchor="middle" font-size="12.5" fill="#e9edfe">Front Controller —</text>
+  <text x="815" y="134" text-anchor="middle" font-size="12.5" fill="#e9edfe">единая точка входа</text>
+
+  <path d="M815 162 L 815 196" stroke="#6b6f78" stroke-width="2" marker-end="url(#a)"/>
+  <rect x="640" y="200" width="296" height="70" rx="12" fill="#e9edfe" stroke="#4f6bed"/>
+  <text x="656" y="224" font-size="13.5" font-weight="700" fill="#3149c4">① HandlerMapping</text>
+  <text x="656" y="244" font-size="12.5" fill="#24262b">находит метод по URL и HTTP-методу:</text>
+  <text x="656" y="261" font-size="12" fill="#24262b" font-family="Consolas, monospace">@PostMapping("/orders")</text>
+  <path d="M640 235 L 600 235" stroke="#6b6f78" stroke-width="2" marker-end="url(#a)"/>
+
+  <rect x="304" y="200" width="292" height="70" rx="12" fill="#e9edfe" stroke="#4f6bed"/>
+  <text x="320" y="224" font-size="13.5" font-weight="700" fill="#3149c4">② HandlerInterceptor.preHandle</text>
+  <text x="320" y="244" font-size="12.5" fill="#24262b">общая логика до контроллера</text>
+  <text x="320" y="261" font-size="12.5" fill="#24262b">(может прервать обработку)</text>
+  <path d="M304 235 L 264 235" stroke="#6b6f78" stroke-width="2" marker-end="url(#a)"/>
+
+  <rect x="24" y="200" width="236" height="96" rx="12" fill="#e9edfe" stroke="#4f6bed"/>
+  <text x="40" y="224" font-size="13.5" font-weight="700" fill="#3149c4">③ HandlerAdapter</text>
+  <text x="40" y="244" font-size="12.5" fill="#24262b">аргументы: @PathVariable,</text>
+  <text x="40" y="261" font-size="12.5" fill="#24262b">@RequestBody (JSON → DTO),</text>
+  <text x="40" y="278" font-size="12.5" fill="#24262b">@Valid — валидация</text>
+  <path d="M142 296 L 142 330" stroke="#6b6f78" stroke-width="2" marker-end="url(#a)"/>
+
+  <rect x="24" y="334" width="236" height="76" rx="12" fill="#1f9d6b"/>
+  <text x="142" y="362" text-anchor="middle" font-size="15" font-weight="700" fill="#fff">④ @RestController</text>
+  <text x="142" y="384" text-anchor="middle" font-size="12.5" fill="#e3f5ec">вызывает сервис</text>
+  <text x="142" y="400" text-anchor="middle" font-size="12.5" fill="#e3f5ec">(прокси @Transactional)</text>
+  <path d="M260 372 L 300 372" stroke="#6b6f78" stroke-width="2" marker-end="url(#a)"/>
+
+  <rect x="304" y="334" width="292" height="76" rx="12" fill="#e9edfe" stroke="#4f6bed"/>
+  <text x="320" y="358" font-size="13.5" font-weight="700" fill="#3149c4">⑤ HttpMessageConverter</text>
+  <text x="320" y="378" font-size="12.5" fill="#24262b">объект → JSON (Jackson),</text>
+  <text x="320" y="395" font-size="12.5" fill="#24262b">статус и заголовки ResponseEntity</text>
+  <path d="M596 372 L 636 372" stroke="#6b6f78" stroke-width="2" marker-end="url(#a)"/>
+
+  <rect x="640" y="334" width="296" height="76" rx="12" fill="#e9edfe" stroke="#4f6bed"/>
+  <text x="656" y="358" font-size="13.5" font-weight="700" fill="#3149c4">⑥ postHandle / afterCompletion</text>
+  <text x="656" y="378" font-size="12.5" fill="#24262b">ответ возвращается обратно</text>
+  <text x="656" y="395" font-size="12.5" fill="#24262b">через фильтры клиенту</text>
+
+  <rect x="24" y="432" width="912" height="86" rx="14" fill="#fbe6ed" stroke="#c2456b"/>
+  <text x="44" y="458" font-size="14" font-weight="700" fill="#a3304f">Если брошено исключение</text>
+  <text x="44" y="480" font-size="13" fill="#24262b">HandlerExceptionResolver → @ExceptionHandler в @RestControllerAdvice → ответ ProblemDetail (RFC 9457) с нужным статусом.</text>
+  <text x="44" y="500" font-size="13" fill="#24262b">Ошибки в фильтрах (например, 401 от Spring Security) до DispatcherServlet не доходят — их обрабатывает сам фильтр.</text>
+
+  <rect x="24" y="532" width="912" height="54" rx="12" fill="#f6f5f1"/>
+  <text x="44" y="554" font-size="13" fill="#24262b"><tspan font-weight="700">Filter</tspan> — уровень сервлет-контейнера, видит все запросы. <tspan font-weight="700">Interceptor</tspan> — уровень Spring MVC, знает выбранный обработчик.</text>
+  <text x="44" y="574" font-size="13" fill="#24262b"><tspan font-weight="700">AOP</tspan> — уровень бинов: оборачивает вызовы методов сервисов. В WebFlux тот же путь строится на WebFilter и неблокирующем I/O.</text>
+</svg>

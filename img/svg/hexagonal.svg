@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" font-family="Segoe UI, Inter, Arial, sans-serif">
+  <rect width="960" height="600" fill="#ffffff"/>
+  <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#4f6bed"/></marker></defs>
+  <text x="480" y="38" text-anchor="middle" font-size="24" font-weight="700" fill="#24262b">Гексагональная архитектура (Ports &amp; Adapters) в Spring-сервисе</text>
+  <polygon points="480,70 720,165 720,435 480,530 240,435 240,165" fill="#eef0f6" stroke="#4f6bed" stroke-width="3"/>
+  <text x="480" y="112" text-anchor="middle" font-size="15" font-weight="700" fill="#3149c4">application (use cases)</text>
+  <text x="480" y="134" text-anchor="middle" font-size="13" fill="#3149c4">OrderService, @Transactional, оркестрация</text>
+  <circle cx="480" cy="300" r="110" fill="#e3f5ec" stroke="#1f9d6b" stroke-width="3"/>
+  <text x="480" y="270" text-anchor="middle" font-size="20" font-weight="700" fill="#14724d">domain</text>
+  <text x="480" y="296" text-anchor="middle" font-size="13" fill="#14724d">Order, Money, правила,</text>
+  <text x="480" y="314" text-anchor="middle" font-size="13" fill="#14724d">доменные события</text>
+  <text x="480" y="338" text-anchor="middle" font-size="12" fill="#14724d">без Spring и JPA</text>
+  <rect x="236" y="250" width="92" height="40" rx="8" fill="#4f6bed"/><text x="282" y="275" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">in-порт</text>
+  <rect x="632" y="250" width="92" height="40" rx="8" fill="#d98a1c"/><text x="678" y="275" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">out-порт</text>
+  <rect x="632" y="330" width="92" height="40" rx="8" fill="#d98a1c"/><text x="678" y="355" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">out-порт</text>
+  <g font-size="14">
+    <rect x="30" y="170" width="170" height="54" rx="10" fill="#f6f7fb" stroke="#c9cfe3"/><text x="115" y="194" text-anchor="middle" font-weight="700" fill="#24262b">REST-контроллер</text><text x="115" y="213" text-anchor="middle" font-size="12" fill="#6b6f78">@RestController</text>
+    <rect x="30" y="250" width="170" height="54" rx="10" fill="#f6f7fb" stroke="#c9cfe3"/><text x="115" y="274" text-anchor="middle" font-weight="700" fill="#24262b">Kafka listener</text><text x="115" y="293" text-anchor="middle" font-size="12" fill="#6b6f78">@KafkaListener</text>
+    <rect x="30" y="330" width="170" height="54" rx="10" fill="#f6f7fb" stroke="#c9cfe3"/><text x="115" y="354" text-anchor="middle" font-weight="700" fill="#24262b">Планировщик</text><text x="115" y="373" text-anchor="middle" font-size="12" fill="#6b6f78">@Scheduled</text>
+    <rect x="760" y="210" width="180" height="54" rx="10" fill="#f6f7fb" stroke="#c9cfe3"/><text x="850" y="234" text-anchor="middle" font-weight="700" fill="#24262b">JPA-адаптер</text><text x="850" y="253" text-anchor="middle" font-size="12" fill="#6b6f78">PostgreSQL</text>
+    <rect x="760" y="290" width="180" height="54" rx="10" fill="#f6f7fb" stroke="#c9cfe3"/><text x="850" y="314" text-anchor="middle" font-weight="700" fill="#24262b">HTTP-клиент</text><text x="850" y="333" text-anchor="middle" font-size="12" fill="#6b6f78">платёжный сервис</text>
+    <rect x="760" y="370" width="180" height="54" rx="10" fill="#f6f7fb" stroke="#c9cfe3"/><text x="850" y="394" text-anchor="middle" font-weight="700" fill="#24262b">Kafka producer</text><text x="850" y="413" text-anchor="middle" font-size="12" fill="#6b6f78">события наружу</text>
+  </g>
+  <g stroke="#4f6bed" stroke-width="2.5" marker-end="url(#a)" fill="none">
+    <line x1="202" y1="200" x2="236" y2="260"/><line x1="202" y1="277" x2="234" y2="272"/><line x1="202" y1="352" x2="236" y2="285"/>
+    <line x1="758" y1="237" x2="726" y2="265"/><line x1="758" y1="317" x2="726" y2="345"/><line x1="758" y1="397" x2="726" y2="360"/>
+  </g>
+  <text x="115" y="150" text-anchor="middle" font-size="14" font-weight="700" fill="#3149c4">ведущие адаптеры (driving)</text>
+  <text x="850" y="190" text-anchor="middle" font-size="14" font-weight="700" fill="#9a5d00">ведомые адаптеры (driven)</text>
+  <text x="480" y="470" text-anchor="middle" font-size="14" fill="#24262b">Все зависимости направлены ВНУТРЬ: адаптеры реализуют интерфейсы-порты,</text>
+  <text x="480" y="490" text-anchor="middle" font-size="14" fill="#24262b">объявленные в ядре. Замена БД или брокера не затрагивает домен.</text>
+  <text x="480" y="570" text-anchor="middle" font-size="13" fill="#6b6f78">Out-порт: interface OrderRepository / PaymentGateway в домене · Адаптер: класс JpaOrderRepository implements OrderRepository</text>
+</svg>

@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" font-family="Segoe UI, Inter, Arial, sans-serif">
+  <rect width="960" height="600" fill="#ffffff"/>
+  <text x="480" y="38" text-anchor="middle" font-size="24" font-weight="700" fill="#24262b">merge, rebase и squash: как меняется история</text>
+
+  <!-- исходное -->
+  <rect x="24" y="60" width="440" height="230" rx="16" fill="#f6f5f1"/>
+  <text x="44" y="88" font-size="15" font-weight="700" fill="#24262b">Исходное состояние</text>
+  <g font-size="13" font-weight="700" text-anchor="middle" fill="#fff">
+    <line x1="80" y1="150" x2="380" y2="150" stroke="#4f6bed" stroke-width="4"/>
+    <path d="M200 150 C 230 150, 230 220, 260 220 L 340 220" fill="none" stroke="#d98a1c" stroke-width="4"/>
+    <circle cx="80" cy="150" r="18" fill="#4f6bed"/><text x="80" y="155">A</text>
+    <circle cx="200" cy="150" r="18" fill="#4f6bed"/><text x="200" y="155">B</text>
+    <circle cx="300" cy="150" r="18" fill="#4f6bed"/><text x="300" y="155">C</text>
+    <circle cx="380" cy="150" r="18" fill="#4f6bed"/><text x="380" y="155">E</text>
+    <circle cx="270" cy="220" r="18" fill="#d98a1c"/><text x="270" y="225">D1</text>
+    <circle cx="340" cy="220" r="18" fill="#d98a1c"/><text x="340" y="225">D2</text>
+  </g>
+  <text x="404" y="155" font-size="13" font-weight="700" fill="#3149c4">main</text>
+  <text x="364" y="225" font-size="13" font-weight="700" fill="#9a5c06">feature</text>
+  <text x="44" y="270" font-size="12.5" fill="#6b6f78">feature ответвилась от B; в main с тех пор появились C и E</text>
+
+  <!-- merge -->
+  <rect x="496" y="60" width="440" height="230" rx="16" fill="#e9edfe"/>
+  <text x="516" y="88" font-size="15" font-weight="700" fill="#3149c4">git merge feature (в main)</text>
+  <g font-size="13" font-weight="700" text-anchor="middle" fill="#fff">
+    <line x1="540" y1="150" x2="880" y2="150" stroke="#4f6bed" stroke-width="4"/>
+    <path d="M640 150 C 670 150, 670 220, 700 220 L 780 220 C 820 220, 840 160, 880 150" fill="none" stroke="#d98a1c" stroke-width="4"/>
+    <circle cx="540" cy="150" r="16" fill="#4f6bed"/><text x="540" y="155">A</text>
+    <circle cx="640" cy="150" r="16" fill="#4f6bed"/><text x="640" y="155">B</text>
+    <circle cx="730" cy="150" r="16" fill="#4f6bed"/><text x="730" y="155">C</text>
+    <circle cx="800" cy="150" r="16" fill="#4f6bed"/><text x="800" y="155">E</text>
+    <circle cx="710" cy="220" r="16" fill="#d98a1c"/><text x="710" y="225">D1</text>
+    <circle cx="780" cy="220" r="16" fill="#d98a1c"/><text x="780" y="225">D2</text>
+    <circle cx="880" cy="150" r="20" fill="#24262b"/><text x="880" y="155">M</text>
+  </g>
+  <text x="516" y="252" font-size="12.5" fill="#24262b">мерж-коммит M с двумя родителями;</text>
+  <text x="516" y="270" font-size="12.5" fill="#24262b">история сохранена как есть, ничего не переписано</text>
+
+  <!-- rebase -->
+  <rect x="24" y="310" width="440" height="230" rx="16" fill="#fcf0dc"/>
+  <text x="44" y="338" font-size="15" font-weight="700" fill="#9a5c06">git rebase main (в feature)</text>
+  <g font-size="13" font-weight="700" text-anchor="middle" fill="#fff">
+    <line x1="70" y1="400" x2="400" y2="400" stroke="#4f6bed" stroke-width="4"/>
+    <line x1="280" y1="400" x2="400" y2="400" stroke="#d98a1c" stroke-width="4"/>
+    <circle cx="70" cy="400" r="16" fill="#4f6bed"/><text x="70" y="405">A</text>
+    <circle cx="140" cy="400" r="16" fill="#4f6bed"/><text x="140" y="405">B</text>
+    <circle cx="210" cy="400" r="16" fill="#4f6bed"/><text x="210" y="405">C</text>
+    <circle cx="280" cy="400" r="16" fill="#4f6bed"/><text x="280" y="405">E</text>
+    <circle cx="340" cy="400" r="16" fill="#d98a1c"/><text x="340" y="405">D1′</text>
+    <circle cx="400" cy="400" r="16" fill="#d98a1c"/><text x="400" y="405">D2′</text>
+  </g>
+  <text x="44" y="452" font-size="12.5" fill="#24262b">D1 и D2 пересозданы поверх E (новые хеши);</text>
+  <text x="44" y="470" font-size="12.5" fill="#24262b">история линейная, после неё merge — fast-forward</text>
+  <text x="44" y="500" font-size="12.5" fill="#c2456b" font-weight="700">Не ребейзьте ветки, с которыми уже работают другие:</text>
+  <text x="44" y="518" font-size="12.5" fill="#c2456b">понадобится push --force и у коллег сломается история</text>
+
+  <!-- squash -->
+  <rect x="496" y="310" width="440" height="230" rx="16" fill="#e3f5ec"/>
+  <text x="516" y="338" font-size="15" font-weight="700" fill="#137a52">Squash and merge (в PR)</text>
+  <g font-size="13" font-weight="700" text-anchor="middle" fill="#fff">
+    <line x1="540" y1="400" x2="840" y2="400" stroke="#4f6bed" stroke-width="4"/>
+    <circle cx="540" cy="400" r="16" fill="#4f6bed"/><text x="540" y="405">A</text>
+    <circle cx="610" cy="400" r="16" fill="#4f6bed"/><text x="610" y="405">B</text>
+    <circle cx="680" cy="400" r="16" fill="#4f6bed"/><text x="680" y="405">C</text>
+    <circle cx="750" cy="400" r="16" fill="#4f6bed"/><text x="750" y="405">E</text>
+    <circle cx="840" cy="400" r="20" fill="#1f9d6b"/><text x="840" y="405">S</text>
+  </g>
+  <text x="516" y="452" font-size="12.5" fill="#24262b">все коммиты ветки сжаты в один коммит S;</text>
+  <text x="516" y="470" font-size="12.5" fill="#24262b">main чистая: один PR — один коммит</text>
+  <text x="516" y="500" font-size="12.5" fill="#6b6f78">минус: теряются промежуточные коммиты</text>
+  <text x="516" y="518" font-size="12.5" fill="#6b6f78">(для git bisect их бывает жалко)</text>
+
+  <rect x="24" y="556" width="912" height="34" rx="10" fill="#f6f5f1"/>
+  <text x="480" y="578" text-anchor="middle" font-size="13" fill="#24262b">Конфликт: правите файлы → git add → git merge --continue или git rebase --continue (передумали — --abort)</text>
+</svg>

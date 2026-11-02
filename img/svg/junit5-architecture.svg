@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 560" font-family="Segoe UI, Inter, Arial, sans-serif">
+  <rect width="960" height="560" fill="#ffffff"/>
+  <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#9aa0a6"/></marker></defs>
+  <text x="480" y="40" text-anchor="middle" font-size="24" font-weight="700" fill="#24262b">Архитектура JUnit 5 / JUnit 6: Platform + движки</text>
+  <g font-size="15" font-weight="600" fill="#24262b">
+    <rect x="60" y="70" width="190" height="56" rx="12" fill="#eef0f6" stroke="#c9cfe3"/><text x="155" y="104" text-anchor="middle">IntelliJ IDEA</text>
+    <rect x="270" y="70" width="190" height="56" rx="12" fill="#eef0f6" stroke="#c9cfe3"/><text x="365" y="104" text-anchor="middle">Maven Surefire</text>
+    <rect x="480" y="70" width="190" height="56" rx="12" fill="#eef0f6" stroke="#c9cfe3"/><text x="575" y="104" text-anchor="middle">Gradle test</text>
+    <rect x="690" y="70" width="210" height="56" rx="12" fill="#eef0f6" stroke="#c9cfe3"/><text x="795" y="104" text-anchor="middle">Console Launcher / CI</text>
+  </g>
+  <g stroke="#9aa0a6" stroke-width="2" marker-end="url(#a)">
+    <line x1="155" y1="128" x2="155" y2="168"/><line x1="365" y1="128" x2="365" y2="168"/><line x1="575" y1="128" x2="575" y2="168"/><line x1="795" y1="128" x2="795" y2="168"/>
+  </g>
+  <rect x="40" y="172" width="880" height="120" rx="16" fill="#4f6bed"/>
+  <text x="480" y="208" text-anchor="middle" font-size="21" font-weight="700" fill="#fff">JUnit Platform</text>
+  <text x="480" y="236" text-anchor="middle" font-size="15" fill="#e9edfe">Launcher API — обнаружение и запуск тестов, фильтры по тегам, отчёты</text>
+  <text x="480" y="262" text-anchor="middle" font-size="15" fill="#e9edfe">TestEngine API — контракт, который реализует любой движок тестов</text>
+  <g stroke="#9aa0a6" stroke-width="2" marker-end="url(#a)">
+    <line x1="175" y1="294" x2="175" y2="330"/><line x1="480" y1="294" x2="480" y2="330"/><line x1="785" y1="294" x2="785" y2="330"/>
+  </g>
+  <rect x="40" y="334" width="270" height="190" rx="16" fill="#e3f5ec" stroke="#1f9d6b" stroke-width="2"/>
+  <text x="175" y="368" text-anchor="middle" font-size="19" font-weight="700" fill="#14724d">JUnit Jupiter</text>
+  <text x="175" y="392" text-anchor="middle" font-size="14" fill="#14724d">движок + API для новых тестов</text>
+  <g font-size="14" fill="#24262b"><text x="62" y="424">• @Test, @BeforeEach, @Nested</text><text x="62" y="448">• @ParameterizedTest</text><text x="62" y="472">• Extensions (@ExtendWith)</text><text x="62" y="496">• пакет org.junit.jupiter.api</text></g>
+  <rect x="345" y="334" width="270" height="190" rx="16" fill="#fcf0dc" stroke="#d98a1c" stroke-width="2"/>
+  <text x="480" y="368" text-anchor="middle" font-size="19" font-weight="700" fill="#9a5d00">JUnit Vintage</text>
+  <text x="480" y="392" text-anchor="middle" font-size="14" fill="#9a5d00">запуск старых тестов JUnit 3/4</text>
+  <g font-size="14" fill="#24262b"><text x="367" y="424">• @org.junit.Test, @RunWith</text><text x="367" y="448">• нужен для плавной миграции</text><text x="367" y="472">• в JUnit 6 объявлен</text><text x="367" y="496">  устаревшим (deprecated)</text></g>
+  <rect x="650" y="334" width="270" height="190" rx="16" fill="#f3eefe" stroke="#8a5cf6" stroke-width="2"/>
+  <text x="785" y="368" text-anchor="middle" font-size="19" font-weight="700" fill="#5b2fc2">Сторонние движки</text>
+  <text x="785" y="392" text-anchor="middle" font-size="14" fill="#5b2fc2">работают на той же платформе</text>
+  <g font-size="14" fill="#24262b"><text x="672" y="424">• Spock (Groovy)</text><text x="672" y="448">• Cucumber (BDD)</text><text x="672" y="472">• Kotest, jqwik (property-based)</text><text x="672" y="496">• ArchUnit</text></g>
+  <text x="480" y="548" text-anchor="middle" font-size="13" fill="#6b6f78">JUnit 4 был одной монолитной библиотекой; в JUnit 5 запуск (Platform) отделён от API написания тестов (Jupiter)</text>
+</svg>

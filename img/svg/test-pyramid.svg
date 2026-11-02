@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 560" font-family="Segoe UI, Inter, Arial, sans-serif">
+  <rect width="960" height="560" fill="#ffffff"/>
+  <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#6b6f78"/></marker></defs>
+  <text x="480" y="40" text-anchor="middle" font-size="24" font-weight="700" fill="#24262b">Пирамида тестирования Java/Spring-сервиса</text>
+  <polygon points="380,80 500,80 560,190 320,190" fill="#c2456b"/>
+  <text x="440" y="130" text-anchor="middle" font-size="18" font-weight="700" fill="#fff">E2E / UI</text>
+  <text x="440" y="155" text-anchor="middle" font-size="13" fill="#ffe3ec">единицы, ~5%</text>
+  <polygon points="318,196 562,196 640,330 240,330" fill="#d98a1c"/>
+  <text x="440" y="250" text-anchor="middle" font-size="18" font-weight="700" fill="#fff">Интеграционные</text>
+  <text x="440" y="274" text-anchor="middle" font-size="13" fill="#fff4e0">@SpringBootTest + Testcontainers,</text>
+  <text x="440" y="292" text-anchor="middle" font-size="13" fill="#fff4e0">срезы @WebMvcTest / @DataJpaTest, ~20%</text>
+  <polygon points="238,336 642,336 740,500 140,500" fill="#1f9d6b"/>
+  <text x="440" y="406" text-anchor="middle" font-size="20" font-weight="700" fill="#fff">Unit-тесты</text>
+  <text x="440" y="432" text-anchor="middle" font-size="13" fill="#e3f5ec">JUnit 5 + Mockito + AssertJ, без Spring-контекста,</text>
+  <text x="440" y="450" text-anchor="middle" font-size="13" fill="#e3f5ec">миллисекунды на тест, ~75%</text>
+  <line x1="790" y1="490" x2="790" y2="100" stroke="#6b6f78" stroke-width="2" marker-end="url(#a)"/>
+  <text x="806" y="110" font-size="14" fill="#24262b" font-weight="600">медленнее</text>
+  <text x="806" y="130" font-size="14" fill="#24262b" font-weight="600">дороже</text>
+  <text x="806" y="150" font-size="14" fill="#24262b" font-weight="600">реалистичнее</text>
+  <text x="806" y="460" font-size="14" fill="#24262b" font-weight="600">быстрее</text>
+  <text x="806" y="480" font-size="14" fill="#24262b" font-weight="600">дешевле</text>
+  <text x="806" y="500" font-size="14" fill="#24262b" font-weight="600">точнее локализуют</text>
+  <text x="40" y="110" font-size="13" fill="#6b6f78">Сбоку от пирамиды:</text>
+  <text x="40" y="132" font-size="13" fill="#6b6f78">• контрактные (Pact,</text><text x="40" y="150" font-size="13" fill="#6b6f78">  Spring Cloud Contract)</text>
+  <text x="40" y="172" font-size="13" fill="#6b6f78">• нагрузочные (Gatling, k6)</text>
+  <text x="40" y="194" font-size="13" fill="#6b6f78">• архитектурные (ArchUnit)</text>
+  <text x="40" y="216" font-size="13" fill="#6b6f78">• мутационные (PIT)</text>
+  <text x="480" y="540" text-anchor="middle" font-size="13" fill="#6b6f78">Пропорции — ориентир, а не закон. Для микросервисов с тонкой логикой популярен «трофей»: больше интеграционных тестов</text>
+</svg>
