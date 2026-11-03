@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" font-family="Segoe UI, Inter, Arial, sans-serif">
+  <rect width="960" height="600" fill="#1c1f26"/>
+  <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#8a909c"/></marker></defs>
+  <text x="480" y="38" text-anchor="middle" font-size="24" font-weight="700" fill="#e3e5ea">Стратегии кеширования</text>
+
+  <!-- шаблон блока: App, Cache, DB -->
+  <!-- Cache-Aside -->
+  <rect x="24" y="60" width="448" height="250" rx="16" fill="#252c47"/>
+  <text x="44" y="88" font-size="16" font-weight="700" fill="#a9b8ff">Cache-Aside (lazy loading)</text>
+  <text x="44" y="108" font-size="12.5" fill="#9aa0ac">самая распространённая; так работает @Cacheable</text>
+  <g text-anchor="middle" font-size="13" font-weight="700">
+    <rect x="44" y="160" width="110" height="56" rx="10" fill="#4f6bed"/><text x="99" y="193" fill="#fff">App</text>
+    <rect x="304" y="122" width="148" height="50" rx="10" fill="#1c1f26" stroke="#d98a1c" stroke-width="2"/><text x="378" y="152" fill="#f0b04a">Cache</text>
+    <rect x="304" y="210" width="148" height="50" rx="10" fill="#1c1f26" stroke="#1f9d6b" stroke-width="2"/><text x="378" y="240" fill="#3ccf94">DB</text>
+  </g>
+  <g font-size="12" fill="#e3e5ea">
+    <line x1="154" y1="172" x2="300" y2="142" stroke="#9aa0ac" stroke-width="2" marker-end="url(#a)"/><text x="168" y="146">1. get(key)</text>
+    <line x1="154" y1="200" x2="300" y2="232" stroke="#9aa0ac" stroke-width="2" marker-end="url(#a)"/><text x="168" y="236">2. промах → SELECT</text>
+    <path d="M300 160 C 260 180, 220 180, 160 186" fill="none" stroke="#d98a1c" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#a)"/>
+    <text x="44" y="288">3. приложение кладёт результат в кеш с TTL;</text>
+    <text x="44" y="304">при записи — обновить БД и удалить ключ из кеша</text>
+  </g>
+
+  <!-- Read/Write-Through -->
+  <rect x="488" y="60" width="448" height="250" rx="16" fill="#17352a"/>
+  <text x="508" y="88" font-size="16" font-weight="700" fill="#3ccf94">Read-Through / Write-Through</text>
+  <text x="508" y="108" font-size="12.5" fill="#9aa0ac">кеш сам ходит в БД (загрузчик внутри кеша)</text>
+  <g text-anchor="middle" font-size="13" font-weight="700">
+    <rect x="508" y="160" width="110" height="56" rx="10" fill="#4f6bed"/><text x="563" y="193" fill="#fff">App</text>
+    <rect x="660" y="160" width="120" height="56" rx="10" fill="#1c1f26" stroke="#d98a1c" stroke-width="2"/><text x="720" y="193" fill="#f0b04a">Cache</text>
+    <rect x="814" y="160" width="104" height="56" rx="10" fill="#1c1f26" stroke="#1f9d6b" stroke-width="2"/><text x="866" y="193" fill="#3ccf94">DB</text>
+  </g>
+  <line x1="618" y1="188" x2="656" y2="188" stroke="#9aa0ac" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="780" y1="188" x2="810" y2="188" stroke="#9aa0ac" stroke-width="2" marker-end="url(#a)"/>
+  <g font-size="12" fill="#e3e5ea">
+    <text x="508" y="252">Read-Through: при промахе кеш загружает данные сам</text>
+    <text x="508" y="270">(Caffeine LoadingCache, Hibernate L2)</text>
+    <text x="508" y="288">Write-Through: запись идёт в кеш и синхронно в БД —</text>
+    <text x="508" y="304">кеш всегда актуален, но запись медленнее</text>
+  </g>
+
+  <!-- Write-Behind -->
+  <rect x="24" y="326" width="448" height="160" rx="16" fill="#3a2d16"/>
+  <text x="44" y="354" font-size="16" font-weight="700" fill="#f0b04a">Write-Behind (write-back)</text>
+  <g font-size="12.5" fill="#e3e5ea">
+    <text x="44" y="380">запись только в кеш, в БД — асинхронно пачками</text>
+    <text x="44" y="404"><tspan fill="#3ccf94" font-weight="700">+</tspan> очень быстрая запись, разгрузка БД</text>
+    <text x="44" y="426"><tspan fill="#f07399" font-weight="700">−</tspan> при падении кеша данные теряются</text>
+    <text x="44" y="452" fill="#9aa0ac">счётчики, метрики, некритичные данные</text>
+  </g>
+
+  <!-- Refresh-Ahead -->
+  <rect x="488" y="326" width="448" height="160" rx="16" fill="#3d1f2a"/>
+  <text x="508" y="354" font-size="16" font-weight="700" fill="#f07399">Refresh-Ahead</text>
+  <g font-size="12.5" fill="#e3e5ea">
+    <text x="508" y="380">горячий ключ обновляется заранее, до истечения TTL</text>
+    <text x="508" y="404"><tspan fill="#3ccf94" font-weight="700">+</tspan> нет пиков задержки и cache stampede</text>
+    <text x="508" y="426"><tspan fill="#f07399" font-weight="700">−</tspan> лишняя нагрузка, если ключ уже не нужен</text>
+    <text x="508" y="452" fill="#9aa0ac">Caffeine: refreshAfterWrite</text>
+  </g>
+
+  <rect x="24" y="502" width="912" height="84" rx="14" fill="#23272f"/>
+  <text x="44" y="528" font-size="14" font-weight="700" fill="#e3e5ea">Что помнить всегда</text>
+  <text x="44" y="550" font-size="12.5" fill="#e3e5ea">TTL у каждого ключа; инвалидация после записи в БД (а не до); защита от stampede (блокировка на пересчёт, разброс TTL);</text>
+  <text x="44" y="570" font-size="12.5" fill="#e3e5ea">кеш — не источник истины: его потеря не должна ломать систему. Локальный кеш быстрее, распределённый (Redis) — общий для всех экземпляров.</text>
+</svg>

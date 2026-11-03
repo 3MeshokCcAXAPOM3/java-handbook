@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" font-family="Segoe UI, Inter, Arial, sans-serif">
+  <rect width="960" height="600" fill="#1c1f26"/>
+  <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#4f6bed"/></marker></defs>
+  <text x="480" y="40" text-anchor="middle" font-size="24" font-weight="700" fill="#e3e5ea">Жизненный цикл тестового класса JUnit 5</text>
+  <text x="480" y="66" text-anchor="middle" font-size="14" fill="#9aa0ac">серым — аналог в JUnit 4</text>
+  <rect x="300" y="86" width="360" height="62" rx="14" fill="#4f6bed"/>
+  <text x="480" y="114" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">@BeforeAll  (static)</text>
+  <text x="480" y="136" text-anchor="middle" font-size="13" fill="#dfe5ff">один раз на класс: поднять контейнер, общий ресурс</text>
+  <text x="690" y="122" font-size="14" fill="#8a909c">JUnit 4: @BeforeClass</text>
+  <line x1="480" y1="150" x2="480" y2="180" stroke="#4f6bed" stroke-width="2.5" marker-end="url(#a)"/>
+  <rect x="150" y="184" width="660" height="300" rx="18" fill="#23272f" stroke="#3a3f4b" stroke-dasharray="7 5" stroke-width="2"/>
+  <text x="172" y="212" font-size="15" font-weight="700" fill="#a9b8ff">для КАЖДОГО тестового метода</text>
+  <g font-size="16">
+    <rect x="300" y="226" width="360" height="46" rx="12" fill="#262b38" stroke="#3a3f4b"/>
+    <text x="480" y="255" text-anchor="middle" fill="#e3e5ea">новый экземпляр тестового класса *</text>
+    <line x1="480" y1="273" x2="480" y2="292" stroke="#4f6bed" stroke-width="2.5" marker-end="url(#a)"/>
+    <rect x="300" y="295" width="360" height="46" rx="12" fill="#17352a" stroke="#1f9d6b"/>
+    <text x="480" y="324" text-anchor="middle" font-weight="700" fill="#3ccf94">@BeforeEach</text>
+    <text x="690" y="324" font-size="14" fill="#8a909c">JUnit 4: @Before</text>
+    <line x1="480" y1="342" x2="480" y2="361" stroke="#4f6bed" stroke-width="2.5" marker-end="url(#a)"/>
+    <rect x="300" y="364" width="360" height="46" rx="12" fill="#3a2d16" stroke="#d98a1c"/>
+    <text x="480" y="393" text-anchor="middle" font-weight="700" fill="#f0b04a">@Test / @ParameterizedTest / …</text>
+    <line x1="480" y1="411" x2="480" y2="430" stroke="#4f6bed" stroke-width="2.5" marker-end="url(#a)"/>
+    <rect x="300" y="433" width="360" height="40" rx="12" fill="#17352a" stroke="#1f9d6b"/>
+    <text x="480" y="459" text-anchor="middle" font-weight="700" fill="#3ccf94">@AfterEach  (даже если тест упал)</text>
+    <text x="690" y="459" font-size="14" fill="#8a909c">JUnit 4: @After</text>
+  </g>
+  <path d="M298 453 C 210 453, 210 249, 296 249" fill="none" stroke="#6d7380" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#a)"/>
+  <text x="168" y="345" font-size="13" fill="#9aa0ac">следующий</text><text x="168" y="362" font-size="13" fill="#9aa0ac">тест</text>
+  <line x1="480" y1="486" x2="480" y2="512" stroke="#4f6bed" stroke-width="2.5" marker-end="url(#a)"/>
+  <rect x="300" y="515" width="360" height="50" rx="14" fill="#4f6bed"/>
+  <text x="480" y="546" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">@AfterAll  (static)</text>
+  <text x="690" y="546" font-size="14" fill="#8a909c">JUnit 4: @AfterClass</text>
+  <text x="480" y="588" text-anchor="middle" font-size="13" fill="#9aa0ac">* с @TestInstance(Lifecycle.PER_CLASS) экземпляр один на класс, а @BeforeAll/@AfterAll могут быть нестатическими</text>
+</svg>

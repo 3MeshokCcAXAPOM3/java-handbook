@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 580" font-family="Segoe UI, Inter, Arial, sans-serif">
+  <rect width="960" height="580" fill="#1c1f26"/>
+  <text x="480" y="38" text-anchor="middle" font-size="24" font-weight="700" fill="#e3e5ea">Типы NoSQL-хранилищ: модель данных и применение</text>
+
+  <!-- key-value -->
+  <rect x="24" y="60" width="448" height="160" rx="16" fill="#3d1f2a"/>
+  <text x="44" y="88" font-size="16" font-weight="700" fill="#f07399">Ключ–значение · Redis, DynamoDB</text>
+  <g font-size="12.5" font-family="Consolas, monospace">
+    <rect x="44" y="102" width="150" height="26" rx="6" fill="#1c1f26"/><text x="54" y="120" fill="#e3e5ea">session:9f3a</text>
+    <rect x="200" y="102" width="252" height="26" rx="6" fill="#1c1f26"/><text x="210" y="120" fill="#e3e5ea">{"userId":42,"cart":[…]}</text>
+    <rect x="44" y="134" width="150" height="26" rx="6" fill="#1c1f26"/><text x="54" y="152" fill="#e3e5ea">rate:42:12:05</text>
+    <rect x="200" y="134" width="252" height="26" rx="6" fill="#1c1f26"/><text x="210" y="152" fill="#e3e5ea">17</text>
+  </g>
+  <text x="44" y="186" font-size="12.5" fill="#e3e5ea">поиск только по ключу, микросекунды</text>
+  <text x="44" y="206" font-size="12.5" fill="#9aa0ac">кеш, сессии, счётчики, блокировки, очереди</text>
+
+  <!-- document -->
+  <rect x="488" y="60" width="448" height="160" rx="16" fill="#17352a"/>
+  <text x="508" y="88" font-size="16" font-weight="700" fill="#3ccf94">Документная · MongoDB</text>
+  <rect x="508" y="100" width="230" height="106" rx="8" fill="#1c1f26"/>
+  <g font-size="12" font-family="Consolas, monospace" fill="#e3e5ea">
+    <text x="518" y="118">{ "_id": 42,</text>
+    <text x="518" y="134">  "customer": "Анна",</text>
+    <text x="518" y="150">  "items": [</text>
+    <text x="518" y="166">    {"sku":"A1","qty":2} ],</text>
+    <text x="518" y="182">  "status": "PAID" }</text>
+  </g>
+  <text x="752" y="124" font-size="12.5" fill="#e3e5ea">гибкая схема,</text>
+  <text x="752" y="142" font-size="12.5" fill="#e3e5ea">вложенные данные</text>
+  <text x="752" y="160" font-size="12.5" fill="#e3e5ea">читаются целиком</text>
+  <text x="752" y="186" font-size="12.5" fill="#9aa0ac">каталоги, профили,</text>
+  <text x="752" y="202" font-size="12.5" fill="#9aa0ac">контент</text>
+
+  <!-- wide column -->
+  <rect x="24" y="236" width="448" height="180" rx="16" fill="#3a2d16"/>
+  <text x="44" y="264" font-size="16" font-weight="700" fill="#f0b04a">Широкие колонки · Cassandra, ScyllaDB</text>
+  <g font-size="12">
+    <rect x="44" y="278" width="130" height="26" rx="6" fill="#d98a1c"/><text x="109" y="296" text-anchor="middle" fill="#fff" font-weight="700">sensor_id (партиция)</text>
+    <rect x="180" y="278" width="130" height="26" rx="6" fill="#7a5a20"/><text x="245" y="296" text-anchor="middle" fill="#e3e5ea" font-weight="700">ts (кластеризация)</text>
+    <rect x="316" y="278" width="136" height="26" rx="6" fill="#1c1f26"/><text x="384" y="296" text-anchor="middle" fill="#e3e5ea">value</text>
+    <rect x="44" y="308" width="130" height="24" rx="6" fill="#1c1f26"/><text x="109" y="325" text-anchor="middle" fill="#e3e5ea">s-17</text>
+    <rect x="180" y="308" width="130" height="24" rx="6" fill="#1c1f26"/><text x="245" y="325" text-anchor="middle" fill="#e3e5ea">12:00:00</text>
+    <rect x="316" y="308" width="136" height="24" rx="6" fill="#1c1f26"/><text x="384" y="325" text-anchor="middle" fill="#e3e5ea">21.4</text>
+    <rect x="44" y="336" width="130" height="24" rx="6" fill="#1c1f26"/><text x="109" y="353" text-anchor="middle" fill="#e3e5ea">s-17</text>
+    <rect x="180" y="336" width="130" height="24" rx="6" fill="#1c1f26"/><text x="245" y="353" text-anchor="middle" fill="#e3e5ea">12:00:05</text>
+    <rect x="316" y="336" width="136" height="24" rx="6" fill="#1c1f26"/><text x="384" y="353" text-anchor="middle" fill="#e3e5ea">21.6</text>
+  </g>
+  <text x="44" y="384" font-size="12.5" fill="#e3e5ea">таблица под запрос, огромные объёмы записи, без JOIN</text>
+  <text x="44" y="404" font-size="12.5" fill="#9aa0ac">временные ряды, события, история, IoT</text>
+
+  <!-- graph -->
+  <rect x="488" y="236" width="448" height="180" rx="16" fill="#252c47"/>
+  <text x="508" y="264" font-size="16" font-weight="700" fill="#a9b8ff">Графовая · Neo4j</text>
+  <g font-size="12" text-anchor="middle">
+    <line x1="560" y1="320" x2="680" y2="300" stroke="#4f6bed" stroke-width="2"/>
+    <line x1="560" y1="320" x2="660" y2="370" stroke="#4f6bed" stroke-width="2"/>
+    <line x1="680" y1="300" x2="790" y2="330" stroke="#4f6bed" stroke-width="2"/>
+    <line x1="660" y1="370" x2="790" y2="330" stroke="#4f6bed" stroke-width="2"/>
+    <circle cx="560" cy="320" r="24" fill="#4f6bed"/><text x="560" y="324" fill="#fff">Анна</text>
+    <circle cx="680" cy="300" r="24" fill="#4f6bed"/><text x="680" y="304" fill="#fff">Борис</text>
+    <circle cx="660" cy="370" r="24" fill="#4f6bed"/><text x="660" y="374" fill="#fff">Вера</text>
+    <circle cx="790" cy="330" r="26" fill="#1f9d6b"/><text x="790" y="334" fill="#fff">Java</text>
+    <text x="620" y="302" fill="#9aa0ac">друг</text><text x="740" y="304" fill="#9aa0ac">знает</text>
+  </g>
+  <text x="826" y="300" font-size="12.5" fill="#e3e5ea">узлы и рёбра,</text>
+  <text x="826" y="318" font-size="12.5" fill="#e3e5ea">обход связей</text>
+  <text x="508" y="404" font-size="12.5" fill="#9aa0ac">соцсети, рекомендации, антифрод, маршруты</text>
+
+  <rect x="24" y="432" width="912" height="134" rx="16" fill="#23272f"/>
+  <text x="44" y="458" font-size="15" font-weight="700" fill="#e3e5ea">Ещё два вида и общий принцип</text>
+  <g font-size="12.5" fill="#e3e5ea">
+    <text x="44" y="482"><tspan font-weight="700">Поисковые</tspan> (Elasticsearch, OpenSearch) — полнотекстовый поиск и аналитика логов; не основная БД.</text>
+    <text x="44" y="504"><tspan font-weight="700">Векторные</tspan> (pgvector, Qdrant, Milvus) — поиск похожих объектов по эмбеддингам: семантический поиск, RAG.</text>
+    <text x="44" y="532">Выбор начинается с запросов и требований к согласованности. Реляционная БД (PostgreSQL с JSONB) закрывает большинство задач;</text>
+    <text x="44" y="552">NoSQL берут под конкретную нагрузку: масштаб записи, гибкая схема, обход графа, поиск.</text>
+  </g>
+</svg>

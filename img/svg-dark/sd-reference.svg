@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 620" font-family="Segoe UI, Inter, Arial, sans-serif">
+  <rect width="960" height="620" fill="#1c1f26"/>
+  <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#8a909c"/></marker></defs>
+  <text x="480" y="36" text-anchor="middle" font-size="24" font-weight="700" fill="#e3e5ea">Типовая архитектура масштабируемого бэкенда</text>
+
+  <g text-anchor="middle">
+    <rect x="24" y="64" width="150" height="56" rx="12" fill="#23272f" stroke="#6d7380"/><text x="99" y="88" font-size="14" font-weight="700" fill="#e3e5ea">Клиенты</text><text x="99" y="107" font-size="11.5" fill="#9aa0ac">браузер, мобильные</text>
+    <rect x="214" y="64" width="150" height="56" rx="12" fill="#1c1f26" stroke="#6d7380"/><text x="289" y="88" font-size="14" font-weight="700" fill="#e3e5ea">CDN</text><text x="289" y="107" font-size="11.5" fill="#9aa0ac">статика, кеш на краю</text>
+    <rect x="404" y="64" width="190" height="56" rx="12" fill="#3a2d16" stroke="#d98a1c"/><text x="499" y="88" font-size="14" font-weight="700" fill="#f0b04a">Балансировщик L7</text><text x="499" y="107" font-size="11.5" fill="#9aa0ac">TLS, health checks</text>
+    <rect x="634" y="64" width="302" height="56" rx="12" fill="#3a2d16" stroke="#d98a1c"/><text x="785" y="88" font-size="14" font-weight="700" fill="#f0b04a">API Gateway</text><text x="785" y="107" font-size="11.5" fill="#9aa0ac">аутентификация, rate limiting, маршрутизация</text>
+  </g>
+  <line x1="174" y1="92" x2="210" y2="92" stroke="#9aa0ac" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="364" y1="92" x2="400" y2="92" stroke="#9aa0ac" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="594" y1="92" x2="630" y2="92" stroke="#9aa0ac" stroke-width="2" marker-end="url(#a)"/>
+
+  <!-- сервисы -->
+  <rect x="24" y="146" width="912" height="128" rx="16" fill="#252c47" stroke="#4f6bed"/>
+  <text x="44" y="170" font-size="14" font-weight="700" fill="#a9b8ff">Stateless-сервисы · горизонтальное масштабирование (HPA)</text>
+  <g text-anchor="middle" font-size="13">
+    <rect x="44" y="184" width="200" height="72" rx="10" fill="#4f6bed"/><text x="144" y="214" fill="#fff" font-weight="700">orders × 4</text><text x="144" y="236" fill="#e9edfe" font-size="12">сессии не в памяти</text>
+    <rect x="264" y="184" width="200" height="72" rx="10" fill="#4f6bed"/><text x="364" y="214" fill="#fff" font-weight="700">catalog × 6</text><text x="364" y="236" fill="#e9edfe" font-size="12">много чтения</text>
+    <rect x="484" y="184" width="200" height="72" rx="10" fill="#4f6bed"/><text x="584" y="214" fill="#fff" font-weight="700">payments × 2</text><text x="584" y="236" fill="#e9edfe" font-size="12">идемпотентность</text>
+    <rect x="704" y="184" width="212" height="72" rx="10" fill="#7d93f2"/><text x="810" y="214" fill="#fff" font-weight="700">workers × N</text><text x="810" y="236" fill="#e9edfe" font-size="12">фоновая обработка</text>
+  </g>
+  <line x1="785" y1="120" x2="785" y2="142" stroke="#9aa0ac" stroke-width="2" marker-end="url(#a)"/>
+
+  <!-- данные -->
+  <g text-anchor="middle">
+    <rect x="24" y="300" width="230" height="140" rx="14" fill="#3d1f2a" stroke="#c2456b"/>
+    <text x="139" y="326" font-size="14" font-weight="700" fill="#f07399">Кеш · Redis</text>
+    <text x="139" y="350" font-size="12" fill="#e3e5ea">горячие данные, сессии,</text>
+    <text x="139" y="367" font-size="12" fill="#e3e5ea">rate limit, блокировки</text>
+    <text x="139" y="395" font-size="12" fill="#9aa0ac">cache-aside, TTL,</text>
+    <text x="139" y="412" font-size="12" fill="#9aa0ac">разгрузка чтения БД</text>
+
+    <rect x="274" y="300" width="330" height="140" rx="14" fill="#17352a" stroke="#1f9d6b"/>
+    <text x="439" y="326" font-size="14" font-weight="700" fill="#3ccf94">PostgreSQL</text>
+    <rect x="294" y="340" width="130" height="80" rx="10" fill="#1f9d6b"/><text x="359" y="370" font-size="13" font-weight="700" fill="#fff">primary</text><text x="359" y="390" font-size="11.5" fill="#e3f5ec">все записи</text>
+    <rect x="454" y="340" width="130" height="36" rx="8" fill="#2f6f55"/><text x="519" y="363" font-size="12" fill="#e3e5ea">replica 1 · чтение</text>
+    <rect x="454" y="384" width="130" height="36" rx="8" fill="#2f6f55"/><text x="519" y="407" font-size="12" fill="#e3e5ea">replica 2 · чтение</text>
+    <line x1="424" y1="370" x2="450" y2="360" stroke="#1f9d6b" stroke-width="2" marker-end="url(#a)"/>
+    <line x1="424" y1="390" x2="450" y2="400" stroke="#1f9d6b" stroke-width="2" marker-end="url(#a)"/>
+
+    <rect x="624" y="300" width="312" height="140" rx="14" fill="#3a2d16" stroke="#d98a1c"/>
+    <text x="780" y="326" font-size="14" font-weight="700" fill="#f0b04a">Kafka</text>
+    <text x="780" y="350" font-size="12" fill="#e3e5ea">события между сервисами,</text>
+    <text x="780" y="367" font-size="12" fill="#e3e5ea">асинхронные задачи, сглаживание пиков</text>
+    <text x="780" y="395" font-size="12" fill="#9aa0ac">outbox → топик → workers,</text>
+    <text x="780" y="412" font-size="12" fill="#9aa0ac">ключ партиции = id агрегата</text>
+  </g>
+  <line x1="144" y1="256" x2="144" y2="296" stroke="#9aa0ac" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="364" y1="256" x2="364" y2="296" stroke="#9aa0ac" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="584" y1="256" x2="660" y2="296" stroke="#9aa0ac" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="810" y1="296" x2="810" y2="260" stroke="#9aa0ac" stroke-width="2" marker-end="url(#a)"/>
+
+  <rect x="24" y="456" width="440" height="150" rx="14" fill="#23272f"/>
+  <text x="44" y="482" font-size="14.5" font-weight="700" fill="#e3e5ea">Масштабирование</text>
+  <g font-size="12.5" fill="#e3e5ea">
+    <text x="44" y="506">• чтение: кеш, реплики, CDN, денормализация</text>
+    <text x="44" y="528">• запись: очереди, батчи, шардирование по ключу</text>
+    <text x="44" y="550">• сервисы: без состояния → просто добавить экземпляры</text>
+    <text x="44" y="572">• объектное хранилище (S3) для файлов</text>
+    <text x="44" y="594">• поиск — Elasticsearch, аналитика — отдельное хранилище</text>
+  </g>
+  <rect x="484" y="456" width="452" height="150" rx="14" fill="#23272f"/>
+  <text x="504" y="482" font-size="14.5" font-weight="700" fill="#e3e5ea">Надёжность</text>
+  <g font-size="12.5" fill="#e3e5ea">
+    <text x="504" y="506">• нет единой точки отказа: ≥ 2 экземпляра и зоны</text>
+    <text x="504" y="528">• таймауты, ретраи с паузой, circuit breaker</text>
+    <text x="504" y="550">• идемпотентность операций и потребителей</text>
+    <text x="504" y="572">• метрики, логи, трейсы и алерты по SLO</text>
+    <text x="504" y="594">• резервные копии и проверенное восстановление</text>
+  </g>
+</svg>

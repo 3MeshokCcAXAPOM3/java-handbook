@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 620" font-family="Segoe UI, Inter, Arial, sans-serif">
+  <rect width="960" height="620" fill="#1c1f26"/>
+  <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#8a909c"/></marker></defs>
+  <text x="480" y="38" text-anchor="middle" font-size="24" font-weight="700" fill="#e3e5ea">Жизненный цикл бина Spring (singleton)</text>
+
+  <!-- ряд 1 -->
+  <rect x="30" y="66" width="270" height="118" rx="14" fill="#23272f" stroke="#6d7380" stroke-width="1.5"/>
+  <circle cx="54" cy="90" r="14" fill="#8a909c"/><text x="54" y="95" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">1</text>
+  <text x="76" y="95" font-size="15" font-weight="700" fill="#e3e5ea">Определение бина</text>
+  <text x="46" y="122" font-size="13" fill="#e3e5ea">сканирование @Component,</text>
+  <text x="46" y="140" font-size="13" fill="#e3e5ea">методы @Bean, автоконфигурация</text>
+  <text x="46" y="166" font-size="12.5" fill="#9aa0ac">→ BeanDefinition</text>
+  <line x1="300" y1="125" x2="340" y2="125" stroke="#9aa0ac" stroke-width="2" marker-end="url(#a)"/>
+  <rect x="344" y="66" width="270" height="118" rx="14" fill="#23272f" stroke="#6d7380" stroke-width="1.5"/>
+  <circle cx="368" cy="90" r="14" fill="#8a909c"/><text x="368" y="95" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">2</text>
+  <text x="390" y="95" font-size="15" font-weight="700" fill="#e3e5ea">BeanFactoryPostProcessor</text>
+  <text x="360" y="122" font-size="13" fill="#e3e5ea">меняет определения до создания</text>
+  <text x="360" y="140" font-size="13" fill="#e3e5ea">бинов: подстановка ${…}</text>
+  <text x="360" y="166" font-size="12.5" fill="#9aa0ac">объектов бинов ещё нет</text>
+  <line x1="614" y1="125" x2="654" y2="125" stroke="#9aa0ac" stroke-width="2" marker-end="url(#a)"/>
+  <rect x="658" y="66" width="272" height="118" rx="14" fill="#252c47" stroke="#4f6bed" stroke-width="1.5"/>
+  <circle cx="682" cy="90" r="14" fill="#4f6bed"/><text x="682" y="95" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">3</text>
+  <text x="704" y="95" font-size="15" font-weight="700" fill="#a9b8ff">Создание экземпляра</text>
+  <text x="674" y="122" font-size="13" fill="#e3e5ea">вызов конструктора —</text>
+  <text x="674" y="140" font-size="13" fill="#e3e5ea">внедрение через конструктор</text>
+  <text x="674" y="166" font-size="12.5" fill="#9aa0ac">(рекомендуемый способ)</text>
+
+  <path d="M794 184 L 794 214" stroke="#9aa0ac" stroke-width="2" marker-end="url(#a)"/>
+
+  <!-- ряд 2 (справа налево) -->
+  <rect x="658" y="218" width="272" height="118" rx="14" fill="#252c47" stroke="#4f6bed" stroke-width="1.5"/>
+  <circle cx="682" cy="242" r="14" fill="#4f6bed"/><text x="682" y="247" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">4</text>
+  <text x="704" y="247" font-size="15" font-weight="700" fill="#a9b8ff">Зависимости и Aware</text>
+  <text x="674" y="274" font-size="13" fill="#e3e5ea">внедрение в поля и сеттеры;</text>
+  <text x="674" y="292" font-size="13" fill="#e3e5ea">BeanNameAware,</text>
+  <text x="674" y="310" font-size="13" fill="#e3e5ea">ApplicationContextAware…</text>
+  <line x1="658" y1="277" x2="618" y2="277" stroke="#9aa0ac" stroke-width="2" marker-end="url(#a)"/>
+  <rect x="344" y="218" width="270" height="118" rx="14" fill="#3a2d16" stroke="#d98a1c" stroke-width="1.5"/>
+  <circle cx="368" cy="242" r="14" fill="#d98a1c"/><text x="368" y="247" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">5</text>
+  <text x="390" y="247" font-size="15" font-weight="700" fill="#f0b04a">BeanPostProcessor</text>
+  <text x="360" y="274" font-size="13" fill="#e3e5ea" font-family="Consolas, monospace">postProcessBefore-</text>
+  <text x="360" y="292" font-size="13" fill="#e3e5ea" font-family="Consolas, monospace">Initialization()</text>
+  <text x="360" y="318" font-size="12.5" fill="#9aa0ac">для всех бинов по очереди</text>
+  <line x1="344" y1="277" x2="304" y2="277" stroke="#9aa0ac" stroke-width="2" marker-end="url(#a)"/>
+  <rect x="30" y="218" width="270" height="118" rx="14" fill="#17352a" stroke="#1f9d6b" stroke-width="1.5"/>
+  <circle cx="54" cy="242" r="14" fill="#1f9d6b"/><text x="54" y="247" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">6</text>
+  <text x="76" y="247" font-size="15" font-weight="700" fill="#3ccf94">Инициализация</text>
+  <text x="46" y="274" font-size="13" fill="#e3e5ea">1) @PostConstruct</text>
+  <text x="46" y="292" font-size="13" fill="#e3e5ea">2) InitializingBean.afterPropertiesSet</text>
+  <text x="46" y="310" font-size="13" fill="#e3e5ea">3) initMethod из @Bean</text>
+
+  <path d="M165 336 L 165 366" stroke="#9aa0ac" stroke-width="2" marker-end="url(#a)"/>
+
+  <!-- ряд 3 -->
+  <rect x="30" y="370" width="270" height="130" rx="14" fill="#3a2d16" stroke="#d98a1c" stroke-width="2"/>
+  <circle cx="54" cy="394" r="14" fill="#d98a1c"/><text x="54" y="399" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">7</text>
+  <text x="76" y="399" font-size="15" font-weight="700" fill="#f0b04a">BeanPostProcessor</text>
+  <text x="46" y="426" font-size="13" fill="#e3e5ea" font-family="Consolas, monospace">postProcessAfterInitialization()</text>
+  <text x="46" y="452" font-size="13" fill="#f07399" font-weight="700">здесь бин заменяется прокси:</text>
+  <text x="46" y="470" font-size="13" fill="#e3e5ea">@Transactional, @Async,</text>
+  <text x="46" y="488" font-size="13" fill="#e3e5ea">@Cacheable, AOP-аспекты</text>
+  <line x1="300" y1="435" x2="340" y2="435" stroke="#9aa0ac" stroke-width="2" marker-end="url(#a)"/>
+  <rect x="344" y="370" width="270" height="130" rx="14" fill="#1f9d6b"/>
+  <circle cx="368" cy="394" r="14" fill="#1c1f26"/><text x="368" y="399" text-anchor="middle" font-size="13" font-weight="700" fill="#3ccf94">8</text>
+  <text x="390" y="399" font-size="15" font-weight="700" fill="#fff">Бин готов к работе</text>
+  <text x="360" y="428" font-size="13" fill="#e3f5ec">лежит в контексте, внедряется</text>
+  <text x="360" y="446" font-size="13" fill="#e3f5ec">в другие бины (часто — прокси)</text>
+  <text x="360" y="474" font-size="13" fill="#e3f5ec">ContextRefreshedEvent,</text>
+  <text x="360" y="492" font-size="13" fill="#e3f5ec">ApplicationReadyEvent</text>
+  <line x1="614" y1="435" x2="654" y2="435" stroke="#9aa0ac" stroke-width="2" marker-end="url(#a)"/>
+  <rect x="658" y="370" width="272" height="130" rx="14" fill="#3d1f2a" stroke="#c2456b" stroke-width="1.5"/>
+  <circle cx="682" cy="394" r="14" fill="#c2456b"/><text x="682" y="399" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">9</text>
+  <text x="704" y="399" font-size="15" font-weight="700" fill="#f07399">Закрытие контекста</text>
+  <text x="674" y="426" font-size="13" fill="#e3e5ea">1) @PreDestroy</text>
+  <text x="674" y="444" font-size="13" fill="#e3e5ea">2) DisposableBean.destroy</text>
+  <text x="674" y="462" font-size="13" fill="#e3e5ea">3) destroyMethod из @Bean</text>
+  <text x="674" y="488" font-size="12.5" fill="#9aa0ac">при остановке приложения</text>
+
+  <rect x="30" y="522" width="900" height="80" rx="12" fill="#23272f"/>
+  <text x="50" y="548" font-size="13.5" fill="#e3e5ea"><tspan font-weight="700">prototype:</tspan> Spring создаёт и инициализирует бин, но не управляет его уничтожением — @PreDestroy не вызывается.</text>
+  <text x="50" y="570" font-size="13.5" fill="#e3e5ea"><tspan font-weight="700">Ленивость:</tspan> singleton-бины создаются при старте контекста; @Lazy откладывает создание до первого обращения.</text>
+  <text x="50" y="592" font-size="13.5" fill="#e3e5ea"><tspan font-weight="700">Self-invocation:</tspan> вызов this.method() идёт мимо прокси из шага 7 — аннотации не срабатывают.</text>
+</svg>

@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 560" font-family="Segoe UI, Inter, Arial, sans-serif">
+  <rect width="960" height="560" fill="#1c1f26"/>
+  <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#8a909c"/></marker></defs>
+  <text x="480" y="38" text-anchor="middle" font-size="24" font-weight="700" fill="#e3e5ea">Circuit Breaker: три состояния</text>
+  <text x="480" y="62" text-anchor="middle" font-size="14" fill="#9aa0ac">Resilience4j · защищает сервис от «зависшей» зависимости и даёт ей восстановиться</text>
+
+  <rect x="40" y="120" width="250" height="150" rx="20" fill="#17352a" stroke="#1f9d6b" stroke-width="2.5"/>
+  <text x="165" y="156" text-anchor="middle" font-size="22" font-weight="700" fill="#3ccf94">CLOSED</text>
+  <text x="165" y="182" text-anchor="middle" font-size="13" fill="#e3e5ea">вызовы проходят;</text>
+  <text x="165" y="200" text-anchor="middle" font-size="13" fill="#e3e5ea">считается доля ошибок</text>
+  <text x="165" y="218" text-anchor="middle" font-size="13" fill="#e3e5ea">и медленных вызовов</text>
+  <text x="165" y="246" text-anchor="middle" font-size="12" fill="#9aa0ac">в скользящем окне</text>
+
+  <rect x="670" y="120" width="250" height="150" rx="20" fill="#3d1f2a" stroke="#c2456b" stroke-width="2.5"/>
+  <text x="795" y="156" text-anchor="middle" font-size="22" font-weight="700" fill="#f07399">OPEN</text>
+  <text x="795" y="182" text-anchor="middle" font-size="13" fill="#e3e5ea">вызовы НЕ выполняются:</text>
+  <text x="795" y="200" text-anchor="middle" font-size="13" fill="#e3e5ea">сразу ошибка или fallback</text>
+  <text x="795" y="218" text-anchor="middle" font-size="13" fill="#e3e5ea">(CallNotPermittedException)</text>
+  <text x="795" y="246" text-anchor="middle" font-size="12" fill="#9aa0ac">зависимость отдыхает</text>
+
+  <rect x="355" y="340" width="250" height="150" rx="20" fill="#3a2d16" stroke="#d98a1c" stroke-width="2.5"/>
+  <text x="480" y="376" text-anchor="middle" font-size="22" font-weight="700" fill="#f0b04a">HALF_OPEN</text>
+  <text x="480" y="402" text-anchor="middle" font-size="13" fill="#e3e5ea">пропускается несколько</text>
+  <text x="480" y="420" text-anchor="middle" font-size="13" fill="#e3e5ea">пробных вызовов</text>
+  <text x="480" y="448" text-anchor="middle" font-size="12" fill="#9aa0ac">permittedNumberOfCalls-</text>
+  <text x="480" y="464" text-anchor="middle" font-size="12" fill="#9aa0ac">InHalfOpenState</text>
+
+  <path d="M290 165 L 666 165" stroke="#c2456b" stroke-width="2.5" marker-end="url(#a)"/>
+  <text x="478" y="150" text-anchor="middle" font-size="13" fill="#e3e5ea">ошибок ≥ failureRateThreshold (например, 50%)</text>
+  <text x="478" y="186" text-anchor="middle" font-size="12" fill="#9aa0ac">после minimumNumberOfCalls</text>
+
+  <path d="M795 270 C 790 340, 700 380, 609 400" fill="none" stroke="#d98a1c" stroke-width="2.5" marker-end="url(#a)"/>
+  <text x="690" y="296" text-anchor="end" font-size="13" fill="#e3e5ea">прошло</text>
+  <text x="690" y="313" text-anchor="end" font-size="13" fill="#e3e5ea" font-family="Consolas, monospace">waitDurationInOpenState</text>
+
+  <path d="M355 410 C 250 400, 170 350, 165 274" fill="none" stroke="#1f9d6b" stroke-width="2.5" marker-end="url(#a)"/>
+  <text x="70" y="352" font-size="13" fill="#3ccf94" font-weight="700">пробные вызовы успешны</text>
+  <path d="M605 450 C 760 450, 880 380, 860 274" fill="none" stroke="#c2456b" stroke-width="2.5" stroke-dasharray="6 4" marker-end="url(#a)"/>
+  <text x="700" y="470" font-size="13" fill="#f07399" font-weight="700">снова ошибки</text>
+
+  <rect x="24" y="500" width="912" height="48" rx="12" fill="#23272f"/>
+  <text x="480" y="521" text-anchor="middle" font-size="13" fill="#e3e5ea">Комбинируйте с таймаутом (иначе медленные вызовы держат потоки), ретраями с паузой и bulkhead.</text>
+  <text x="480" y="539" text-anchor="middle" font-size="13" fill="#e3e5ea">Порядок в Resilience4j: Retry → CircuitBreaker → RateLimiter → TimeLimiter → Bulkhead → вызов.</text>
+</svg>

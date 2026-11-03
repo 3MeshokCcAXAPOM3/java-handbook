@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 560" font-family="Segoe UI, Inter, Arial, sans-serif">
+  <rect width="960" height="560" fill="#1c1f26"/>
+  <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#8a909c"/></marker></defs>
+  <text x="480" y="38" text-anchor="middle" font-size="24" font-weight="700" fill="#e3e5ea">Жизненный цикл Maven: фазы и цели плагинов</text>
+  <text x="480" y="62" text-anchor="middle" font-size="14" fill="#9aa0ac">Вызов фазы выполняет все предыдущие фазы цикла; работу делают цели (goals) плагинов, привязанные к фазам</text>
+
+  <g text-anchor="middle">
+    <rect x="24" y="86" width="104" height="54" rx="10" fill="#23272f" stroke="#6d7380"/><text x="76" y="118" font-size="13" font-weight="700" fill="#e3e5ea">validate</text>
+    <rect x="140" y="86" width="104" height="54" rx="10" fill="#252c47" stroke="#4f6bed"/><text x="192" y="118" font-size="13" font-weight="700" fill="#a9b8ff">compile</text>
+    <rect x="256" y="86" width="104" height="54" rx="10" fill="#17352a" stroke="#1f9d6b"/><text x="308" y="118" font-size="13" font-weight="700" fill="#3ccf94">test</text>
+    <rect x="372" y="86" width="104" height="54" rx="10" fill="#3a2d16" stroke="#d98a1c"/><text x="424" y="118" font-size="13" font-weight="700" fill="#f0b04a">package</text>
+    <rect x="488" y="86" width="130" height="54" rx="10" fill="#17352a" stroke="#1f9d6b"/><text x="553" y="110" font-size="12.5" font-weight="700" fill="#3ccf94">integration-</text><text x="553" y="127" font-size="12.5" font-weight="700" fill="#3ccf94">test</text>
+    <rect x="630" y="86" width="96" height="54" rx="10" fill="#17352a" stroke="#1f9d6b" stroke-width="2.5"/><text x="678" y="118" font-size="13" font-weight="700" fill="#3ccf94">verify</text>
+    <rect x="738" y="86" width="96" height="54" rx="10" fill="#252c47" stroke="#4f6bed"/><text x="786" y="118" font-size="13" font-weight="700" fill="#a9b8ff">install</text>
+    <rect x="846" y="86" width="90" height="54" rx="10" fill="#252c47" stroke="#4f6bed"/><text x="891" y="118" font-size="13" font-weight="700" fill="#a9b8ff">deploy</text>
+  </g>
+  <g stroke="#9aa0ac" stroke-width="2">
+    <line x1="128" y1="113" x2="138" y2="113" marker-end="url(#a)"/><line x1="244" y1="113" x2="254" y2="113" marker-end="url(#a)"/>
+    <line x1="360" y1="113" x2="370" y2="113" marker-end="url(#a)"/><line x1="476" y1="113" x2="486" y2="113" marker-end="url(#a)"/>
+    <line x1="618" y1="113" x2="628" y2="113" marker-end="url(#a)"/><line x1="726" y1="113" x2="736" y2="113" marker-end="url(#a)"/>
+    <line x1="834" y1="113" x2="844" y2="113" marker-end="url(#a)"/>
+  </g>
+  <g font-size="11.5" fill="#e3e5ea" text-anchor="middle">
+    <text x="76" y="160">enforcer</text>
+    <text x="192" y="160">compiler:compile</text><text x="192" y="176">resources</text>
+    <text x="308" y="160">surefire:test</text><text x="308" y="176">*Test.java</text>
+    <text x="424" y="160">jar:jar</text><text x="424" y="176">spring-boot:</text><text x="424" y="190">repackage</text>
+    <text x="553" y="160">failsafe:</text><text x="553" y="176">integration-test</text><text x="553" y="190">*IT.java</text>
+    <text x="678" y="160">failsafe:verify</text><text x="678" y="176">jacoco:check</text>
+    <text x="786" y="160">в ~/.m2</text>
+    <text x="891" y="160">в Nexus,</text><text x="891" y="176">Artifactory</text>
+  </g>
+  <g font-size="12" fill="#9aa0ac">
+    <path d="M140 200 L 140 210 L 618 210 L 618 200" fill="none" stroke="#6d7380"/>
+    <text x="379" y="228" text-anchor="middle">между ними есть и другие фазы: generate-sources, process-resources, test-compile…</text>
+  </g>
+
+  <rect x="24" y="250" width="440" height="160" rx="14" fill="#23272f"/>
+  <text x="44" y="276" font-size="14.5" font-weight="700" fill="#e3e5ea">Три жизненных цикла</text>
+  <g font-size="12.5" fill="#e3e5ea">
+    <text x="44" y="300"><tspan font-weight="700">default</tspan> — сборка (фазы выше)</text>
+    <text x="44" y="322"><tspan font-weight="700">clean</tspan> — удалить target/</text>
+    <text x="44" y="344"><tspan font-weight="700">site</tspan> — документация проекта</text>
+    <text x="44" y="372" fill="#9aa0ac">Фаза сама ничего не делает: поведение зависит</text>
+    <text x="44" y="390" fill="#9aa0ac">от packaging (jar, war, pom) и подключённых плагинов</text>
+  </g>
+  <rect x="484" y="250" width="452" height="160" rx="14" fill="#3a3f4b"/>
+  <text x="504" y="276" font-size="14.5" font-weight="700" fill="#fff">Частые команды</text>
+  <g font-size="12.5" font-family="Consolas, monospace" fill="#d6d9e0">
+    <text x="504" y="302"><tspan fill="#98c379">./mvnw verify</tspan>        # стандарт для CI</text>
+    <text x="504" y="324"><tspan fill="#98c379">./mvnw clean package</tspan> # собрать jar</text>
+    <text x="504" y="346"><tspan fill="#98c379">./mvnw -DskipTests</tspan>   # тесты не запускать</text>
+    <text x="504" y="368"><tspan fill="#98c379">./mvnw -pl app -am</tspan>   # модуль и зависимости</text>
+    <text x="504" y="390"><tspan fill="#98c379">./mvnw dependency:tree</tspan> # цель плагина</text>
+  </g>
+
+  <rect x="24" y="428" width="912" height="118" rx="14" fill="#3a2d16" stroke="#d98a1c"/>
+  <text x="44" y="454" font-size="14.5" font-weight="700" fill="#f0b04a">Surefire vs Failsafe</text>
+  <g font-size="12.5" fill="#e3e5ea">
+    <text x="44" y="478">Surefire — unit-тесты в фазе test; при падении сборка останавливается сразу.</text>
+    <text x="44" y="500">Failsafe — интеграционные тесты в integration-test; ошибки проверяются в verify, поэтому успевает выполниться</text>
+    <text x="44" y="518">post-integration-test (остановка окружения).</text>
+    <text x="44" y="538" fill="#9aa0ac">-DskipTests компилирует тесты, но не запускает; -Dmaven.test.skip=true не компилирует вовсе.</text>
+  </g>
+</svg>

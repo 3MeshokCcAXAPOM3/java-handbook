@@ -49,47 +49,49 @@
   }
 
   // ---------- тема ----------
-  function applyTheme() { document.documentElement.dataset.theme = S.theme; $('#themeBtn').textContent = S.theme === 'dark' ? '☀️' : '🌙'; }
+  // схемы SVG имеют отдельный тёмный вариант (img/svg-dark), остальные изображения приглушаются стилями
+  const imgSrc = src => S.theme === 'dark' && src.startsWith('img/svg/') ? src.replace('img/svg/', 'img/svg-dark/') : src;
+  function applyTheme() {
+    document.documentElement.dataset.theme = S.theme; $('#themeBtn').textContent = S.theme === 'dark' ? '☀️' : '🌙';
+    $$('img[data-src0]').forEach(im => { im.src = imgSrc(im.dataset.src0); });
+    if ($('#lb').classList.contains('open')) showLB();
+  }
 
   // ---------- утилиты ----------
-  function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 1800); }
+  function toast(msg) { const t = $('#toast'); if (t.classList.contains('sticky')) return; t.textContent = msg; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 1800); }
   function stats(list) { let k = 0, r = 0; list.forEach(q => { const v = st(q.id); if (v === 'k') k++; else if (v === 'r') r++; }); return { k, r, n: list.length }; }
   const topicQs = t => t.sections.flatMap(s => s.items);
   function barHTML(s, cls = 'bar') { const pk = s.n ? s.k / s.n * 100 : 0, pr = s.n ? s.r / s.n * 100 : 0; return `<div class="${cls}"><i class="k" style="width:${pk}%"></i><i class="r" style="width:${pr}%"></i></div>`; }
   function plural(n, a, b, c) { const m = n % 10, h = n % 100; return n + ' ' + (m === 1 && h !== 11 ? a : m >= 2 && m <= 4 && (h < 10 || h >= 20) ? b : c); }
 
   // ---------- боковая навигация ----------
+  let navFilter = '';
   function renderNav() {
-    const cur = location.hash;
-    const starCnt = ORDER.filter(q => q.star).length, repCnt = ORDER.filter(q => st(q.id) === 'r').length, noteCnt = Object.keys(S.notes).filter(k => S.notes[k] && Q[k]).length;
-    $('#sideLinks').innerHTML = [
-      ['#/', '🏠', 'Главная', ''],
-      ['#/road', '🧭', 'Дорожная карта', ''],
-      ['#/top', '⭐', 'Ключевые вопросы', starCnt],
-      ['#/train', '🎯', 'Тренировка', ''],
-      ['#/quiz', '🧪', 'Самотест', (D.quiz || []).length],
-      ['#/exam', '🎫', 'Экзамен и билеты', ''],
-      ['#/pad', '⌨️', 'Блокнот кода', ''],
-      ['#/gloss', '📘', 'Глоссарий', (D.gloss || []).length || ''],
-      ['#/stats', '📊', 'Статистика', ''],
-      ['#/repeat', '↻', 'На повторение', repCnt || ''],
-      ['#/notes', '📝', 'Мои заметки', noteCnt || ''],
-    ].map(([h, i, t, c]) => `<a class="side-link${(cur === h || (h === '#/' && (cur === '' || cur === '#'))) ? ' active' : ''}" href="${h}"><span class="ico">${i}</span>${t}<span class="cnt">${c}</span></a>`).join('');
-    const curSlug = (cur.match(/^#\/(?:t|q)\/([^/]+?)(?:-x?\d+)?$/) || [])[1];
-    const curTopic = cur.startsWith('#/q/') ? (Q[decodeURIComponent(cur.slice(4))] || {}).topic : TOPIC[curSlug];
+    const cur = location.hash || '#/';
+    const mod = currentModule(cur);
+    $('#sideLinks').innerHTML = `<div class="mod-grid">${MODULES.map(m => `<a class="mod${mod === m.id ? ' active' : ''}" href="${m.href}" title="${esc(m.long || m.t)}"><span class="mi">${m.ico}</span><span class="mt">${esc(m.t)}</span></a>`).join('')}</div>
+      <div class="nav-filter"><input id="navQ" placeholder="Найти тему…" value="${esc(navFilter)}" autocomplete="off"></div>`;
+    const curSlug = (cur.match(/^#\/t\/([^/]+)(?:\/do)?$/) || [])[1];
+    const qm = cur.match(/^#\/(?:q|solve)\/(.+)$/);
+    const curTopic = qm ? (Q[decodeURIComponent(qm[1])] || {}).topic : TOPIC[curSlug];
+    if (curTopic && !curTopic.module && !navFilter && S.navFor !== cur) { S.openGroup = curTopic.group; S.navFor = cur; }
+    const f = norm(navFilter.trim());
     $('#nav').innerHTML = D.groups.map(g => {
-      const ts = D.topics.filter(t => t.group === g);
-      return `<div class="nav-group${S.collapsed[g] ? ' collapsed' : ''}" data-g="${esc(g)}"><div class="nav-gtitle"><span class="chev">▼</span>${esc(g)}</div><div class="nav-items">` +
+      const ts = D.topics.filter(t => t.group === g && !t.module && (!f || norm(t.title).includes(f) || norm(g).includes(f)));
+      if (!ts.length) return '';
+      const open = f || S.openGroup === g;
+      const gs = stats(ts.flatMap(topicQs));
+      return `<div class="nav-group${open ? '' : ' collapsed'}" data-g="${esc(g)}"><div class="nav-gtitle"><span class="chev">▼</span>${esc(g)}<span class="g-cnt">${gs.k}/${gs.n}</span></div><div class="nav-items">` +
         ts.map(t => {
           const s = stats(topicQs(t));
-          const cnt = t.count ? `${s.k}/${t.count}` : `${t.gallery.length} илл.`;
-          return `<a class="nav-item${curTopic === t ? ' active' : ''}" href="#/t/${t.slug}"><div class="nav-row"><span class="nav-name">${esc(t.title)}</span><span class="nav-cnt">${cnt}</span></div>${t.count ? barHTML(s, 'mini-bar') : ''}</a>`;
+          return `<a class="nav-item${curTopic === t ? ' active' : ''}" href="#/t/${t.slug}"><div class="nav-row"><span class="nav-name">${esc(t.title)}</span><span class="nav-cnt">${s.k}/${t.count}</span></div>${barHTML(s, 'mini-bar')}</a>`;
         }).join('') + '</div></div>';
-    }).join('');
+    }).join('') || '<div class="muted" style="padding:8px 12px">Тема не найдена</div>';
+    $('#navQ').oninput = e => { navFilter = e.target.value; const pos = e.target.selectionStart; renderNav(); const n = $('#navQ'); n.focus(); n.setSelectionRange(pos, pos); };
   }
   document.addEventListener('click', e => {
     const gt = e.target.closest('.nav-gtitle'); if (!gt) return;
-    const g = gt.parentElement.dataset.g; S.collapsed[g] = !S.collapsed[g]; save(); gt.parentElement.classList.toggle('collapsed');
+    const g = gt.parentElement.dataset.g; S.openGroup = S.openGroup === g ? null : g; save(); renderNav();
   });
 
   // ---------- рендер ответа ----------
@@ -98,14 +100,12 @@
     if (l === 'a') return ['j', 'm', 's'].map(k => `<div class="lv-block"><div class="lv-head ${k}">${LV[k]}</div>${levelHTML(q, k)}</div>`).join('');
     const h = q.lv[l];
     let out = h || '<p class="empty-lv">Для этого уровня дополнений нет.</p>';
-    if (l === 's' && q.filled) out += '<div class="filled-note">Senior-ответ дописан в справочнике (в методичке был пропуск).</div>';
     return out;
   }
   function badges(q) {
     let b = '';
     if (q.star) b += '<span class="badge star" title="Ключевой вопрос темы">★ Ключевой</span>';
     if (q.lc) b += `<span class="badge lc">LeetCode ${q.lc.num}</span><span class="badge ${q.lc.diff.toLowerCase()}">${q.lc.diff}</span>`;
-    if (q.added) b += '<span class="badge add">дополнено</span>';
     if (q.more) b += '<span class="badge more" title="Есть развёрнутый материал">📖 подробно</span>';
     return b ? `<span class="badges">${b}</span>` : '';
   }
@@ -124,8 +124,8 @@
     const s = st(q.id); const note = S.notes[q.id] || '';
     const solving = card.dataset.solve === '1';
     b.innerHTML = `<div class="card-tools">
-        <div class="lv-tabs">${solving ? '<span class="solve-badge">✍ Режим «Решить самому»</span>' : tabsHTML(q, l)}</div>
-        <div class="tools-r">${canSolve(q) ? `<button class="tbtn solve-t${solving ? ' on' : ''}" data-act="solve" title="Скрыть ответ и решить задачу самостоятельно">${solving ? '📖 К ответу' : '✍ Решить самому'}</button>` : ''}${QZ_BY_REF[q.id] ? `<a class="tbtn" href="#/quiz/q/${q.id}" title="Вопросы самотеста по этой теме">🧪 ${QZ_BY_REF[q.id].length}</a>` : ''}
+        <div class="lv-tabs">${solving ? `<span class="solve-badge">${q.starter ? '🛠 Практикум: найдите и исправьте проблемы' : '✍ Режим «Решить самому»'}</span>` : tabsHTML(q, l)}</div>
+        <div class="tools-r">${canSolve(q) ? `<button class="tbtn solve-t${solving ? ' on' : ''}" data-act="solve" title="Скрыть ответ и решить задачу самостоятельно">${solving ? '📖 К ответу' : q.starter ? '🛠 Отрефакторить самому' : '✍ Решить самому'}</button>` : ''}${QZ_BY_REF[q.id] ? `<a class="tbtn" href="#/quiz/q/${q.id}" title="Вопросы самотеста по этой теме">🧪 ${QZ_BY_REF[q.id].length}</a>` : ''}
           <button class="tbtn k${s === 'k' ? ' on' : ''}" data-act="k" title="Отметить как изученный">✓ Знаю</button>
           <button class="tbtn r${s === 'r' ? ' on' : ''}" data-act="r" title="Добавить в список повторения">↻ Повторить</button>
           <button class="tbtn n${note ? ' on' : ''}" data-act="note" title="Личная заметка">📝 Заметка</button>
@@ -142,7 +142,7 @@
     const key = 'g' + Math.random().toString(36).slice(2);
     GAL[key] = imgs;
     return `<div class="gallery"><div class="gallery-h">${esc(title)} · ${imgs.length}</div><div class="thumbs${big ? ' big' : ''}">` +
-      imgs.map((im, i) => `<div class="thumb" data-g="${key}" data-i="${i}"><img loading="lazy" src="${im.src}" alt=""></div>`).join('') + '</div></div>';
+      imgs.map((im, i) => `<div class="thumb" data-g="${key}" data-i="${i}"><img loading="lazy" src="${imgSrc(im.src)}" data-src0="${im.src}" alt=""></div>`).join('') + '</div></div>';
   }
   const GAL = {};
 
@@ -260,7 +260,7 @@
   // ---------- лайтбокс ----------
   let LB = { imgs: [], i: 0 };
   function openLB(imgs, i) { LB = { imgs, i }; $('#lb').classList.add('open'); showLB(); }
-  function showLB() { const im = LB.imgs[LB.i]; $('#lbImg').src = im.src; $('#lbStage').classList.remove('zoom'); $('#lbInfo').textContent = `${LB.i + 1} / ${LB.imgs.length}  ·  клик — увеличить, ← → — листать, Esc — закрыть`; $('#lbPrev').style.display = $('#lbNext').style.display = LB.imgs.length > 1 ? '' : 'none'; }
+  function showLB() { const im = LB.imgs[LB.i]; $('#lbImg').src = imgSrc(im.src); $('#lbStage').classList.remove('zoom'); $('#lbInfo').textContent = `${LB.i + 1} / ${LB.imgs.length}  ·  клик — увеличить, ← → — листать, Esc — закрыть`; $('#lbPrev').style.display = $('#lbNext').style.display = LB.imgs.length > 1 ? '' : 'none'; }
   function closeLB() { $('#lb').classList.remove('open'); }
   $('#lbImg').addEventListener('click', e => { e.stopPropagation(); $('#lbStage').classList.toggle('zoom'); });
   $('#lbStage').addEventListener('click', e => { if (e.target.id === 'lbStage') closeLB(); });
@@ -280,20 +280,25 @@
       <div class="hero"><h1>Java-справочник</h1>
         <p>Учебник и справочник Java-разработчика: от основ языка до архитектуры и инфраструктуры. Каждый ответ — на трёх уровнях (Junior, Middle, Senior) и развёрнутой статьёй «Подробно».</p>
         <div class="hero-stats"><div class="hero-stat"><b>${ORDER.length}</b><span>вопросов</span></div>
-          <div class="hero-stat"><b>${D.topics.length}</b><span>тем</span></div>
+          <div class="hero-stat"><b>${D.topics.filter(t => !t.module).length}</b><span>тем</span></div>
           <div class="hero-stat"><b>${all.k}</b><span>изучено</span></div>
           <div class="hero-stat"><b>${all.r}</b><span>на повторение</span></div></div>
         <div class="hero-actions">${last ? `<a class="hbtn primary" href="#/q/${last.id}">Продолжить: ${esc(last.q.slice(0, 48))}${last.q.length > 48 ? '…' : ''}</a>` : `<a class="hbtn primary" href="#/t/core1">Начать с Java Core →</a>`}
-          <a class="hbtn" href="#/road">🧭 Дорожная карта</a><a class="hbtn" href="#/exam">🎫 Экзамен</a><a class="hbtn" href="#/train">🎯 Тренировка</a><a class="hbtn" href="#/quiz">🧪 Самотест</a><button class="hbtn" id="rndBtn2">🎲 Случайный вопрос</button></div></div>
+          <a class="hbtn" href="#/road">🧭 Дорожная карта</a><a class="hbtn" href="#/quiz">🧪 Тесты</a><a class="hbtn" href="#/train">🎯 Тренировка</a><button class="hbtn" id="rndBtn2">🎲 Случайный вопрос</button></div></div>
+      ${qodHTML()}
       <div class="home-row">
         <div class="panel"><h3>Общий прогресс</h3>${barHTML(all)}<p class="muted" style="margin:10px 0 0">Изучено ${all.k} из ${all.n} · на повторении ${all.r}. Отмечайте вопросы кнопками «✓ Знаю» и «↻ Повторить», прогресс сохраняется в браузере.</p>
           <div class="kbd-help"><span><kbd>/</kbd> поиск</span><span><kbd>R</kbd> случайный вопрос</span><span><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><kbd>4</kbd> уровень</span></div></div>
         <div class="panel"><h3>На повторение</h3>${repeat.length ? repeat.map(q => `<a class="list-link" href="#/q/${q.id}"><span class="tt">${esc(q.q)}</span><span class="m">${esc(q.topic.title)}</span></a>`).join('') + (ORDER.filter(q => st(q.id) === 'r').length > 6 ? '<a class="list-link" href="#/repeat"><span class="tt">Все вопросы на повторение →</span></a>' : '') : '<p class="muted">Пока пусто. Нажмите «↻ Повторить» у вопроса, который нужно освежить.</p>'}</div>
       </div>
-      ${D.groups.map(g => `<h2 class="group-h">${esc(g)}</h2><div class="tiles">${D.topics.filter(t => t.group === g).map(t => { const s = stats(topicQs(t)); return `<a class="tile" href="#/t/${t.slug}"><span class="t">${esc(t.title)}</span><span class="d">${t.count ? plural(t.count, 'вопрос', 'вопроса', 'вопросов') + ' · изучено ' + s.k : plural(t.gallery.length, 'иллюстрация', 'иллюстрации', 'иллюстраций')}</span>${t.count ? barHTML(s) : ''}</a>`; }).join('')}</div>`).join('')}
-      <div class="home-foot">${esc((D.meta || {}).title || 'Java-справочник')} · ${esc((D.meta || {}).author || '')} · v${esc((D.meta || {}).version || '')}</div>
+      <h2 class="group-h">Тренажёры</h2>
+      <div class="trainers">${MODULES.filter(m => m.topic || m.trainer).map(m => { const ts = m.topic ? topicQs(TOPIC[m.topic]) : null; return `<a class="trainer" href="${m.href}"><span class="ti">${m.ico}</span><span class="tt">${esc(m.long || m.t)}</span><span class="td">${ts ? plural(ts.length, 'задача', 'задачи', 'задач') + ' · решено ' + ts.filter(q => st(q.id) === 'k').length : esc(m.desc || '')}</span></a>`; }).join('')}</div>
+      <h2 class="group-h">Темы</h2>
+      <div class="groups">${D.groups.map(g => { const ts = D.topics.filter(t => t.group === g && !t.module); const gs = stats(ts.flatMap(topicQs)); return `<div class="gblock"><div class="gb-h"><b>${esc(g)}</b><span class="muted">${gs.k}/${gs.n}</span></div>${barHTML(gs)}<div class="gb-topics">${ts.map(t => { const s = stats(topicQs(t)); return `<a href="#/t/${t.slug}" class="gb-t${s.k === s.n && s.n ? ' done' : ''}">${esc(t.title)}<span>${s.k}/${s.n}</span></a>`; }).join('')}</div></div>`; }).join('')}</div>
+      <div class="home-foot">${esc(META.title || 'Java-справочник')} · ${esc(META.author || '')} · <a href="javascript:void 0" data-changes>v${esc(META.version || '')} — что нового</a></div>
     </div>`;
     $('#rndBtn2').onclick = randomQ;
+    $('#qodNext').onclick = () => { S.qod.skip++; save(); const sc = $('.main').scrollTop; pageHome(); $('.main').scrollTop = sc; };
   }
 
   let topicFilter = 'all';
@@ -302,18 +307,18 @@
     const qs = topicQs(t);
     const s = stats(qs);
     if (!t.count) {
-      main().innerHTML = `<div class="page wide"><div class="crumbs"><a href="#/">Главная</a> · ${esc(t.group)}</div><h1 class="title">${esc(t.title)}</h1><p class="subtitle">Шпаргалки из методички — кликните по изображению, чтобы открыть в полном размере.</p>${galleryHTML(t.gallery, 'Шпаргалки', true)}</div>`;
+      main().innerHTML = `<div class="page wide"><div class="crumbs"><a href="#/">Главная</a> · ${esc(t.group)}</div><h1 class="title">${esc(t.title)}</h1><p class="subtitle">Шпаргалки — кликните по изображению, чтобы открыть в полном размере.</p>${galleryHTML(t.gallery, 'Шпаргалки', true)}</div>`;
       return;
     }
     const cnt = { all: qs.length, new: qs.filter(q => !st(q.id)).length, r: qs.filter(q => st(q.id) === 'r').length, k: qs.filter(q => st(q.id) === 'k').length, star: qs.filter(q => q.star).length };
     const pass = q => topicFilter === 'all' || (topicFilter === 'new' && !st(q.id)) || (topicFilter === 'star' && q.star) || st(q.id) === topicFilter;
     main().innerHTML = `<div class="topic-layout"><div>
-      <div class="topic-head"><div class="crumbs"><a href="#/">Главная</a> · ${esc(t.group)}</div><h1 class="title">${esc(t.title)}</h1>
-        <div class="progress">${barHTML(s)}<span class="lbl" id="tpLbl">изучено ${s.k} из ${s.n} · повторить ${s.r}</span></div>
+      <div class="topic-head"><div class="crumbs"><a href="#/">Главная</a> · ${t.module ? `<a href="${t.module === 'leetcode' ? '#/leetcode' : '#/refactor'}">← к каталогу задач</a>` : esc(t.group)}</div><h1 class="title">${esc(t.title)}</h1>
+        ${topicSwitch(t, false)}<div class="progress">${barHTML(s)}<span class="lbl" id="tpLbl">изучено ${s.k} из ${s.n} · повторить ${s.r}</span></div>
         <div class="chips">${[['all', 'Все'], ['new', 'Не изучено'], ['r', '↻ Повторить'], ['k', '✓ Знаю'], ['star', '★ Ключевые']].filter(([k]) => k !== 'star' || cnt.star).map(([k, l]) => `<button class="chip${topicFilter === k ? ' on' : ''}" data-f="${k}">${l}<span class="n">${cnt[k]}</span></button>`).join('')}
           <span class="sp"></span><button class="chip" id="expAll">Развернуть все</button><button class="chip" id="colAll">Свернуть</button><a class="chip" href="#/train/${t.slug}">🎯 Тренировка</a>${QZ_BY_T[t.slug] ? `<a class="chip" href="#/quiz/${t.slug}">🧪 Тест по теме · ${QZ_BY_T[t.slug].length}</a>` : ''}</div></div>
       ${t.sections.map(sec => { const items = sec.items.filter(pass); if (!items.length) return ''; return (sec.title ? `<div class="sec-title">${esc(sec.title)}</div>` : '') + items.map(q => cardHTML(q)).join(''); }).join('') || '<div class="empty"><div class="big">🎉</div>В этом фильтре вопросов нет</div>'}
-      ${t.gallery && t.gallery.length ? `<div class="sec-title">Архив: слайды из методички</div><div class="panel legacy"><p class="muted" style="margin-top:0">Это слайды по <b>JUnit 4</b> (@Before, @BeforeClass, @Ignore, @Test(expected/timeout), правило «should» в имени). Для справки они сохранены, но в новых проектах используйте JUnit 5/6 — актуальные схемы и таблица соответствия аннотаций приведены в вопросах выше.</p>${galleryHTML(t.gallery, 'JUnit 4 — устаревшие слайды')}</div>` : ''}
+      ${t.gallery && t.gallery.length ? `<div class="sec-title">Архив: слайды по JUnit 4</div><div class="panel legacy"><p class="muted" style="margin-top:0">Это слайды по <b>JUnit 4</b> (@Before, @BeforeClass, @Ignore, @Test(expected/timeout), правило «should» в имени). Для справки они сохранены, но в новых проектах используйте JUnit 5/6 — актуальные схемы и таблица соответствия аннотаций приведены в вопросах выше.</p>${galleryHTML(t.gallery, 'JUnit 4 — устаревшие слайды')}</div>` : ''}
     </div><aside class="outline"><div class="outline-h">Содержание темы</div>${t.sections.map(sec => (sec.title ? `<div class="o-sec">${esc(sec.title)}</div>` : '') + sec.items.filter(pass).map(q => `<a href="#/q/${q.id}" data-id="${q.id}" class="${st(q.id)}">${esc(q.q)}</a>`).join('')).join('')}</aside></div>`;
     $$('.chip[data-f]').forEach(c => c.onclick = () => { topicFilter = c.dataset.f; pageTopic(slug); });
     $('#expAll').onclick = () => $$('.card').forEach(c => toggleCard(c, true));
@@ -336,6 +341,47 @@
     if (!m || !TOPIC[m[1]]) return;
     const s = stats(topicQs(TOPIC[m[1]])); const head = $('.topic-head .progress'); if (!head) return;
     head.innerHTML = `${barHTML(s)}<span class="lbl">изучено ${s.k} из ${s.n} · повторить ${s.r}</span>`;
+  }
+
+  // ---------- правильно и неправильно ----------
+  const DD_ALL = D.topics.filter(t => t.dodont).flatMap(t => t.dodont.map(d => Object.assign(d, { topic: t })));
+  function topicSwitch(t, onDo) {
+    if (!t.dodont) return '';
+    return `<div class="tp-switch"><a href="#/t/${t.slug}" class="${onDo ? '' : 'on'}">📚 Вопросы<span class="n">${t.count}</span></a><a href="#/t/${t.slug}/do" class="${onDo ? 'on' : ''}">✅❌ Правильно и неправильно<span class="n">${t.dodont.length}</span></a></div>`;
+  }
+  function ddCardHTML(d, showTopic) {
+    return `<div class="dd-card answer" id="dd-${d.id}"><div class="dd-h"><h3>${esc(d.t)}</h3>${showTopic ? `<a class="dd-topic" href="#/t/${d.topic.slug}/do">${esc(d.topic.title)}</a>` : ''}</div>
+      <div class="dd-why"><b>Почему</b>${d.why}</div>
+      <div class="dd-cols"><div class="dd-col bad"><div class="dd-lbl">❌ Неправильно</div>${d.bad}</div><div class="dd-col good"><div class="dd-lbl">✅ Правильно</div>${d.good}</div></div></div>`;
+  }
+  function ddToolsHTML() {
+    return `<div class="dd-tools"><label class="dd-tg"><input type="checkbox" id="ddInline"${S.ddInline ? ' checked' : ''}> 💬 Комментарии прямо в коде</label><span class="muted dd-hint">Строки с пометкой <span class="dd-mark"></span> поясняются: наведите на строку${matchMedia('(hover: hover)').matches ? '' : ' (или коснитесь её)'} или включите комментарии.</span></div>`;
+  }
+  function ddEnhance(root) {
+    enhanceCode(root);
+    $$('pre', root).forEach(pre => {
+      if (pre.dataset.dd) return; pre.dataset.dd = 1;
+      $$('.ln.tip', pre).forEach(ln => { const c = document.createElement('span'); c.className = 'ln-c'; c.textContent = '  // ' + pre._tips[ln.dataset.i]; ln.appendChild(c); });
+      const hint = $('.pre-hint', pre); if (hint) hint.textContent = '💡 наведите на отмеченные строки';
+    });
+    root.classList.toggle('dd-inline', !!S.ddInline);
+    const cb = $('#ddInline'); if (cb) cb.onchange = () => { S.ddInline = cb.checked; save(); root.classList.toggle('dd-inline', cb.checked); };
+  }
+  function pageDoDont(slug) {
+    const t = TOPIC[slug]; if (!t || !t.dodont) return pageTopic(slug);
+    main().innerHTML = `<div class="page wide dd-page"><div class="topic-head"><div class="crumbs"><a href="#/">Главная</a> · ${esc(t.group)} · <a href="#/dodont">все примеры</a></div><h1 class="title">${esc(t.title)}</h1>
+      ${topicSwitch(t, true)}<p class="subtitle">${plural(t.dodont.length, 'пример', 'примера', 'примеров')}: как писать не стоит и как лучше — с объяснением и комментариями к ключевым строкам.</p>${ddToolsHTML()}</div>
+      ${t.dodont.map(d => ddCardHTML(d)).join('')}</div>`;
+    ddEnhance($('.dd-page')); $('.main').scrollTop = 0;
+  }
+  function pageDoDontAll() {
+    const groups = D.groups.map(g => [g, D.topics.filter(t => t.group === g && t.dodont)]).filter(([, ts]) => ts.length);
+    main().innerHTML = `<div class="page wide dd-page"><div class="crumbs"><a href="#/">Главная</a></div><h1 class="title">Правильно и неправильно</h1>
+      <p class="subtitle">${plural(DD_ALL.length, 'пример', 'примера', 'примеров')} в ${plural(groups.reduce((a, [, ts]) => a + ts.length, 0), 'теме', 'темах', 'темах')}: типичная ошибка рядом с исправленным вариантом. Те же примеры открываются кнопкой «✅❌ Правильно и неправильно» на странице темы.</p>
+      <div class="dd-cat">${groups.map(([g, ts]) => `<div class="dd-g"><div class="dd-gt">${esc(g)}</div>${ts.map(t => `<a href="#/t/${t.slug}/do"><span>${esc(t.title)}</span><span class="n">${t.dodont.length}</span></a>`).join('')}</div>`).join('')}</div>
+      <div class="sec-title">Случайный пример <button class="chip" id="ddMore">↻ Другой</button></div>${ddToolsHTML()}<div id="ddRnd"></div></div>`;
+    const show = () => { const d = DD_ALL[Math.floor(Math.random() * DD_ALL.length)]; $('#ddRnd').innerHTML = ddCardHTML(d, true); ddEnhance($('.dd-page')); };
+    $('#ddMore').onclick = show; show(); $('.main').scrollTop = 0;
   }
 
   function pageList(title, sub, qs, empty) {
@@ -719,14 +765,14 @@
   }
   function makeEditor(host, value, onChange, opts = {}) {
     host.innerHTML = `<div class="ed${opts.tall ? ' tall' : ''}"><div class="ed-gut"></div><div class="ed-wrap"><pre class="ed-hl" aria-hidden="true"><code class="hljs"></code></pre><textarea class="ed-ta" spellcheck="false" wrap="off" autocapitalize="off" autocomplete="off" placeholder="${esc(opts.placeholder || 'Пишите код здесь…')}"></textarea></div></div>
-      <div class="ed-bar"><span class="ed-info">Java · Tab — отступ · Shift+Tab — убрать отступ · Ctrl+/ — комментарий · код не компилируется</span><span class="ed-saved"></span></div>`;
+      <div class="ed-bar"><span class="ed-info">${esc(opts.info || 'Java · Tab — отступ · Shift+Tab — убрать отступ · Ctrl+/ — комментарий · код не компилируется')}</span><span class="ed-saved"></span></div>`;
     const ta = $('.ed-ta', host), code = $('.ed-hl code', host), pre = $('.ed-hl', host), gut = $('.ed-gut', host);
     ta.value = value || '';
     let timer;
     const sync = () => { pre.scrollTop = ta.scrollTop; pre.scrollLeft = ta.scrollLeft; gut.scrollTop = ta.scrollTop; };
     const paint = () => {
       const v = ta.value;
-      let h; try { h = window.hljs ? hljs.highlight(v, { language: 'java', ignoreIllegals: true }).value : esc(v); } catch (e) { h = esc(v); }
+      let h; try { h = window.hljs ? hljs.highlight(v, { language: opts.lang || 'java', ignoreIllegals: true }).value : esc(v); } catch (e) { h = esc(v); }
       code.innerHTML = rainbow(h) + '\n ';
       const n = v.split('\n').length; gut.innerHTML = Array.from({ length: n }, (_, i) => `<span>${i + 1}</span>`).join('') + '<span> </span>';
       sync();
@@ -787,28 +833,31 @@
     return out;
   }
   function solveHTML(q) {
-    const cond = sectionOf(q.more, 'Условие') || `<p>${esc(q.q)}</p>`;
+    let cond = sectionOf(q.more, 'Условие') || `<p>${esc(q.q)}</p>`;
+    if (q.starter) cond = cond.replace(/<pre[\s\S]*?<\/pre>/g, '') + '<p class="muted">Исходный код уже в редакторе — правьте его прямо здесь.</p>';
     const L = q.logic || {};
     const hints = [];
     if (L.idea) hints.push(['💡 Подсказка 1: идея', `<p>${esc(L.idea)}</p>`]);
     if (L.steps) hints.push(['🧭 Подсказка 2: шаги решения', `<ol class="num">${L.steps.map((s, i) => `<li data-n="${i + 1}.">${esc(s)}</li>`).join('')}</ol>${L.cx ? `<p class="muted">⏱ ${esc(L.cx)}</p>` : ''}`]);
-    const ap = sectionOf(q.more, 'Подходы'), edge = sectionOf(q.more, 'Крайние случаи и тесты');
-    if (ap || edge) hints.push(['🧪 Подсказка 3: подходы, крайние случаи и тесты', ap + (edge ? '<h4>Крайние случаи и тесты</h4>' + edge : '')]);
+    const ap = sectionOf(q.more, 'Подходы'), edge = sectionOf(q.more, 'Крайние случаи и тесты'), found = sectionOf(q.more, 'Найденные проблемы');
+    if (found) hints.push(['🧪 Подсказка 3: разбор всех проблем', found]);
+    else if (ap || edge) hints.push(['🧪 Подсказка 3: подходы, крайние случаи и тесты', ap + (edge ? '<h4>Крайние случаи и тесты</h4>' + edge : '')]);
     const sol = sectionOf(q.more, 'Итоговое решение') || q.lv.j || q.lv.m || '';
     hints.push(['✅ Показать решение', sol + `<p><button class="tbtn" data-full="1">📖 Полный разбор задачи</button></p>`]);
     return `<div class="solve"><div class="solve-cond"><div class="solve-h">Условие</div>${cond}</div>
       <div class="solve-ed"></div>
-      <div class="solve-tools"><button class="tbtn" data-sv="tpl">Заготовка класса</button><button class="tbtn" data-sv="copy">Копировать</button><button class="tbtn" data-sv="clear">Очистить</button><a class="tbtn" href="#/pad/q:${q.id}">Открыть в блокноте</a></div>
+      <div class="solve-tools">${q.starter ? '<button class="tbtn" data-sv="orig">Вернуть исходный код</button>' : '<button class="tbtn" data-sv="tpl">Заготовка класса</button>'}<button class="tbtn" data-sv="copy">Копировать</button><button class="tbtn" data-sv="clear">Очистить</button><a class="tbtn" href="#/pad/q:${q.id}">Открыть в блокноте</a></div>
       <div class="solve-hints"><div class="solve-h">Подсказки — открывайте по одной, если застряли</div>${hints.map(([t, h], i) => `<div class="hint-row" data-h="${i}"><button class="hint-btn${i === hints.length - 1 ? ' sol' : ''}">${t}</button><div class="hint-body answer">${h}</div></div>`).join('')}</div></div>`;
   }
   const TPL = 'import java.util.*;\n\npublic class Solution {\n\n    public static void main(String[] args) {\n        \n    }\n}\n';
   function mountSolve(root, q, card) {
-    const ed = makeEditor($('.solve-ed', root), S.code[q.id] || '', v => { if (v.trim()) S.code[q.id] = v; else delete S.code[q.id]; save(); }, { placeholder: 'Напишите решение здесь. Если застряли — откройте подсказку ниже.' });
+    const ed = makeEditor($('.solve-ed', root), S.code[q.id] || q.starter || '', v => { if (v.trim()) S.code[q.id] = v; else delete S.code[q.id]; save(); }, { placeholder: 'Напишите решение здесь. Если застряли — откройте подсказку ниже.' });
     $$('.hint-btn', root).forEach(b => b.onclick = () => { const r = b.parentElement; r.classList.toggle('open'); if (r.classList.contains('open')) enhanceCode(r, q); });
     $$('[data-full]', root).forEach(b => b.onclick = () => { card.dataset.solve = ''; fillCard(card, 'd'); });
     $$('[data-sv]', root).forEach(b => b.onclick = () => {
       const a = b.dataset.sv;
       if (a === 'tpl') { if (!ed.get().trim() || confirm('Заменить текущий код заготовкой?')) ed.set(TPL); }
+      else if (a === 'orig') { if (confirm('Вернуть исходный код задачи? Ваши правки будут потеряны.')) ed.set(q.starter); }
       else if (a === 'copy') fallbackCopy(ed.get());
       else if (a === 'clear') { if (confirm('Очистить черновик?')) ed.set(''); }
     });
@@ -903,7 +952,8 @@
     const letters = [...new Set(GL.map(g => g.t[0].toUpperCase()))];
     main().innerHTML = `<div class="page"><div class="crumbs"><a href="#/">Главная</a></div><h1 class="title">📘 Глоссарий</h1>
       <p class="subtitle">${plural(GL.length, 'термин', 'термина', 'терминов')} с короткими определениями. В ответах справочника такие термины подчёркнуты пунктиром: наведите — увидите определение, кликните — перейдёте к вопросу, где тема разобрана подробно.</p>
-      <input class="gl-search" id="glQ" placeholder="Фильтр терминов…" value="${esc(glFilter)}" autocomplete="off">
+      <div class="chips" style="margin-bottom:12px"><a class="chip on" href="#/gloss/train">🎯 Тренировка терминов</a></div>
+      <input class="gl-search" id="glQ" placeholder="Фильтр терминов и аннотаций…" value="${esc(glFilter)}" autocomplete="off">
       <div class="gl-letters">${letters.map(l => `<button data-l="${esc(l)}">${esc(l)}</button>`).join('')}</div>
       <div id="glList"></div></div>`;
     const draw = () => {
@@ -919,26 +969,292 @@
   }
   // ======================================================================
 
+  // ---------- журнал изменений ----------
+  const META = D.meta || {};
+  function openChanges() {
+    const log = META.changelog || [];
+    let m = $('#chgModal');
+    if (!m) { m = document.createElement('div'); m.id = 'chgModal'; m.className = 'modal'; document.body.appendChild(m); }
+    m.innerHTML = `<div class="modal-box" role="dialog" aria-label="Что нового"><div class="modal-h"><div><b>Что нового</b><span class="muted"> · ${esc(META.title || '')} v${esc(META.version || '')}</span></div><button class="modal-x" title="Закрыть (Esc)">✕</button></div>
+      <div class="modal-body">${log.map((r, i) => `<div class="chg${i === 0 ? ' cur' : ''}"><div class="chg-h"><span class="chg-v">v${esc(r.v)}</span><span class="chg-t">${esc(r.title)}</span>${i === 0 ? '<span class="chg-now">текущая</span>' : ''}<span class="chg-d">${esc(r.date)}</span></div><ul>${r.items.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>`).join('')}</div>
+      <div class="modal-f">${esc(META.author || '')}</div></div>`;
+    m.classList.add('open'); $('#toast').classList.remove('show', 'sticky');
+    $('.modal-x', m).onclick = closeChanges;
+    m.onclick = e => { if (e.target === m) closeChanges(); };
+    S.seenVersion = META.version; save();
+  }
+  function closeChanges() { const m = $('#chgModal'); if (m) m.classList.remove('open'); }
+  document.addEventListener('click', e => { if (e.target.closest('[data-changes]')) { e.preventDefault(); openChanges(); } });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeChanges(); });
+  function versionHint() {
+    if (!META.version || S.seenVersion === META.version) return;
+    if (!S.seenVersion && !Object.keys(S.st).length) { S.seenVersion = META.version; save(); return; }  // новый пользователь
+    const t = $('#toast'); t.innerHTML = `Приложение обновлено до v${esc(META.version)} — <a href="javascript:void 0" data-changes>что нового?</a>`;
+    t.classList.add('show', 'sticky'); setTimeout(() => t.classList.remove('show', 'sticky'), 9000);
+  }
+
+  // ---------- тренировка по глоссарию ----------
+  S.gl = S.gl || {};
+  let GT = null;
+  const isAnn = g => g.t.startsWith('@');
+  function glossSet(src) {
+    if (src === 'new') return GL.filter(g => S.gl[g.t] !== 'k');
+    if (src === 'repeat') return GL.filter(g => S.gl[g.t] === 'r');
+    if (src === 'ann') return GL.filter(isAnn);
+    if (src === 'terms') return GL.filter(g => !isAnn(g));
+    return GL.slice();
+  }
+  function pageGlossTrain() {
+    const known = GL.filter(g => S.gl[g.t] === 'k').length, rep = GL.filter(g => S.gl[g.t] === 'r').length;
+    main().innerHTML = `<div class="page"><div class="crumbs"><a href="#/">Главная</a> · <a href="#/gloss">Глоссарий</a></div><h1 class="title">🎯 Тренировка терминов</h1>
+      <p class="subtitle">Карточки по ${plural(GL.length, 'термину', 'терминам', 'терминам')} глоссария, включая аннотации. Знаю: ${known} · на повторении: ${rep}.</p>
+      <div class="panel"><div class="train-setup">
+        <div class="field"><label>Режим</label><select id="gtMode"><option value="td">Термин → вспомнить определение</option><option value="dt">Определение → вспомнить термин</option><option value="mc">Тест: выбрать определение из 4</option></select></div>
+        <div class="field"><label>Набор</label><select id="gtSrc"><option value="all">Все термины</option><option value="new">Ещё не выученные</option><option value="repeat">На повторении</option><option value="ann">Только аннотации</option><option value="terms">Только термины (без аннотаций)</option></select></div>
+      </div><div style="margin-top:16px;display:flex;gap:10px;align-items:center"><button class="btn" id="gtGo">Начать</button><span class="muted" id="gtCnt"></span></div></div>
+      <div id="gtArea"></div></div>`;
+    const upd = () => { $('#gtCnt').textContent = plural(glossSet($('#gtSrc').value).length, 'карточка', 'карточки', 'карточек'); };
+    $('#gtSrc').onchange = upd; upd();
+    $('#gtGo').onclick = () => {
+      const list = shuffle(glossSet($('#gtSrc').value)).slice(0, 30);
+      GT = { list, i: 0, shown: false, mode: $('#gtMode').value, k: 0, r: 0, pick: null };
+      renderGT(); $('#gtArea').scrollIntoView({ block: 'start', behavior: 'instant' });
+    };
+    $('.main').scrollTop = 0;
+  }
+  function gtOptions(g) {
+    if (!g._opts) {
+      const pool = shuffle(GL.filter(x => x !== g && isAnn(x) === isAnn(g))).slice(0, 3);
+      g._opts = shuffle([g].concat(pool));
+    }
+    return g._opts;
+  }
+  function renderGT() {
+    const a = $('#gtArea'); if (!a || !GT) return;
+    if (!GT.list.length) { a.innerHTML = '<div class="empty"><div class="big">📭</div>В этом наборе нет терминов</div>'; return; }
+    if (GT.i >= GT.list.length) {
+      a.innerHTML = `<div class="flash-card"><div class="empty"><div class="big">🏁</div><h2>Готово!</h2><p>Знаю: ${GT.k} · Повторить: ${GT.r} · Всего: ${GT.list.length}</p><button class="btn" id="gtAgain">Ещё раз</button></div></div>`;
+      $('#gtAgain').onclick = () => pageGlossTrain(); renderNav(); return;
+    }
+    const g = GT.list[GT.i], q = Q[g.q];
+    const link = q ? `<a class="tbtn" href="#/q/${g.q}">Подробнее: ${esc(q.topic.title)} →</a>` : '';
+    let body;
+    if (GT.mode === 'mc') {
+      const opts = gtOptions(g);
+      body = `<div class="fc-q gt-term">${esc(g.t)}</div><div class="qz-kind">◉ Выберите определение</div>
+        <div class="qz-opts">${opts.map((o, n) => { let cls = ''; if (GT.pick !== null) cls = o === g ? 'ok' : (GT.pick === n ? 'bad' : ''); return `<label class="qz-opt ${cls}" data-n="${n}"><span class="qz-mark"></span><span class="qz-n">${n + 1}</span><span class="qz-t">${esc(o.d)}</span></label>`; }).join('')}</div>
+        ${GT.pick !== null ? `<div class="fc-actions"><button class="btn" id="gtNext">Дальше →</button>${link}</div>` : ''}`;
+    } else {
+      const front = GT.mode === 'td' ? `<div class="fc-q gt-term">${esc(g.t)}</div>` : `<div class="fc-q gt-def">${esc(g.d)}</div>`;
+      const back = GT.mode === 'td' ? `<div class="gt-answer">${esc(g.d)}</div>` : `<div class="gt-answer gt-term">${esc(g.t)}</div>`;
+      body = front + (GT.shown ? back : '') + `<div class="fc-actions">${GT.shown
+        ? `<button class="btn ok" id="gtK">✓ Знаю</button><button class="btn rep" id="gtR">↻ Повторить</button>${link}<span class="hint"><kbd>1</kbd> знаю · <kbd>2</kbd> повторить</span>`
+        : `<button class="btn" id="gtShow">Показать ответ</button><button class="btn ghost" id="gtSkip">Пропустить →</button><span class="hint"><kbd>Пробел</kbd> показать</span>`}</div>`;
+    }
+    a.innerHTML = `<div class="train-bar"><i style="width:${GT.i / GT.list.length * 100}%"></i></div>
+      <div class="flash-card"><div class="fc-meta"><span>${isAnn(g) ? 'Аннотация' : 'Термин'}${S.gl[g.t] === 'k' ? ' · ✓ знаю' : S.gl[g.t] === 'r' ? ' · ↻ повторить' : ''}</span><span>${GT.i + 1} / ${GT.list.length}</span></div>${body}</div>`;
+    const next = () => { GT.i++; GT.shown = false; GT.pick = null; renderGT(); };
+    const mark = v => { S.gl[g.t] = v; v === 'k' ? GT.k++ : GT.r++; save(); next(); };
+    if ($('#gtShow')) $('#gtShow').onclick = () => { GT.shown = true; renderGT(); };
+    if ($('#gtSkip')) $('#gtSkip').onclick = next;
+    if ($('#gtK')) $('#gtK').onclick = () => mark('k');
+    if ($('#gtR')) $('#gtR').onclick = () => mark('r');
+    if ($('#gtNext')) $('#gtNext').onclick = next;
+    $$('.qz-opt[data-n]', a).forEach(l => l.onclick = () => {
+      if (GT.pick !== null) return;
+      GT.pick = +l.dataset.n; const ok = gtOptions(g)[GT.pick] === g;
+      S.gl[g.t] = ok ? 'k' : 'r'; ok ? GT.k++ : GT.r++; save(); renderGT();
+    });
+  }
+  document.addEventListener('keydown', e => {
+    if (!GT || !$('#gtArea') || e.target.matches('input,textarea,select') || e.ctrlKey || e.altKey) return;
+    if (GT.i >= GT.list.length) return;
+    if (e.key === ' ' && $('#gtShow')) { e.preventDefault(); $('#gtShow').click(); }
+    else if (e.key === '1' && $('#gtK')) $('#gtK').click();
+    else if (e.key === '2' && $('#gtR')) $('#gtR').click();
+    else if (/^[1-4]$/.test(e.key) && GT.mode === 'mc' && GT.pick === null) { const el = $(`.qz-opt[data-n="${+e.key - 1}"]`); if (el) el.click(); }
+    else if (e.key === 'Enter' && $('#gtNext')) $('#gtNext').click();
+  });
+
+  // ---------- вопрос дня ----------
+  const strHash = s => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
+  const todayKey = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+  function questionOfDay() {
+    S.qod = S.qod && S.qod.d === todayKey() ? S.qod : { d: todayKey(), skip: 0 };
+    let pool = ORDER.filter(q => st(q.id) !== 'k' && q.topic.slug !== 'refactor');
+    if (!pool.length) pool = ORDER;
+    return pool[(strHash(S.qod.d + P.cur) + S.qod.skip) % pool.length];
+  }
+  function qodHTML() {
+    const q = questionOfDay();
+    return `<div class="panel qod"><div class="qod-h"><span>📅 Вопрос дня</span><span class="muted">${esc(q.topic.title)}</span></div>
+      <a class="qod-q" href="#/q/${q.id}">${esc(q.q)}</a>
+      <div class="qod-a"><a class="btn" href="#/q/${q.id}">Открыть ответ</a><button class="btn ghost" id="qodNext">Другой вопрос</button>${st(q.id) === 'k' ? '<span class="acc hi">✓ уже знаете</span>' : ''}</div></div>`;
+  }
+
+  // ---------- сравнения ----------
+  const CMP_RE = /(\bvs\.?\b|против|отличает|отличаются|отличие|отличия|разниц|сравн|различ|\bили\b[^?]*\?|когда что)/i;
+  const COMPARE = ORDER.filter(q => CMP_RE.test(q.q) && q.topic.slug !== 'refactor');
+  let cmpFilter = '';
+  function pageCompare() {
+    main().innerHTML = `<div class="page"><div class="crumbs"><a href="#/">Главная</a></div><h1 class="title">⚖️ Сравнения</h1>
+      <p class="subtitle">${plural(COMPARE.length, 'вопрос', 'вопроса', 'вопросов')} вида «X против Y» со всех тем: ArrayList и LinkedList, REST и gRPC, Kafka и RabbitMQ, merge и rebase… Откройте карточку — ответ на нужном уровне прямо здесь.</p>
+      <input class="gl-search" id="cmpQ" placeholder="Фильтр: например, Kafka или JPA" value="${esc(cmpFilter)}" autocomplete="off">
+      <div id="cmpList"></div></div>`;
+    const draw = () => {
+      const f = norm(cmpFilter.trim());
+      const qs = COMPARE.filter(q => !f || q._q.includes(f) || norm(q.topic.title).includes(f));
+      const byT = {}; qs.forEach(q => (byT[q.topic.title] = byT[q.topic.title] || []).push(q));
+      $('#cmpList').innerHTML = Object.entries(byT).map(([t, list]) => `<div class="sec-title">${esc(t)} · ${list.length}</div>` + list.map(q => cardHTML(q)).join('')).join('') || '<div class="empty">Ничего не найдено</div>';
+    };
+    draw();
+    $('#cmpQ').oninput = e => { cmpFilter = e.target.value; draw(); };
+    $('.main').scrollTop = 0;
+  }
+
+  // ---------- модули и вкладки (0.9.6) ----------
+  const MODULES = [
+    { id: 'home', href: '#/', ico: '🏠', t: 'Главная', re: /^#\/?$|^$/ },
+    { id: 'leet', href: '#/leetcode', ico: '💻', t: 'LeetCode', long: 'LeetCode и лайфкодинг', re: /^#\/leetcode/, topic: 'live' },
+    { id: 'ref', href: '#/refactor', ico: '🛠', t: 'Рефакторинг', long: 'Практикум рефакторинга', re: /^#\/refactor/, topic: 'refactor' },
+    { id: 'tests', href: '#/quiz', ico: '🧪', t: 'Тесты', re: /^#\/(quiz|exam)/ },
+    { id: 'train', href: '#/train', ico: '🎯', t: 'Тренировка', re: /^#\/(train|gloss\/train)/ },
+    { id: 'road', href: '#/road', ico: '🧭', t: 'Карта', re: /^#\/road/ },
+    { id: 'gloss', href: '#/gloss', ico: '📘', t: 'Глоссарий', re: /^#\/(gloss$|compare|dodont)/ },
+    { id: 'prog', href: '#/stats', ico: '📊', t: 'Прогресс', re: /^#\/(stats|repeat|notes|top)/ },
+  ];
+  // тренажёры из отдельных файлов (assets/js/*.js подключаются до app.js и регистрируются в window.APP_EXT)
+  const EXT = window.APP_EXT || [];
+  MODULES.splice(MODULES.findIndex(m => m.id === 'ref') + 1, 0, ...EXT.map(x => Object.assign({ trainer: true }, x)));
+  const API = {
+    $, $$, esc, plural, norm, toast, save, st, Q, TOPIC, ORDER,
+    main: () => main(), S: () => S, renderNav: () => renderNav(),
+    makeEditor: (...a) => makeEditor(...a), enhanceCode: (...a) => enhanceCode(...a), fallbackCopy: t => fallbackCopy(t),
+  };
+  const TABS = {
+    tests: [['#/quiz', '🧪 Самотест'], ['#/exam', '🎫 Экзамен и билеты']],
+    train: [['#/train', '🎯 Вопросы'], ['#/gloss/train', '📘 Термины']],
+    gloss: [['#/gloss', '📘 Глоссарий'], ['#/compare', '⚖️ Сравнения'], ['#/dodont', '✅❌ Правильно и неправильно']],
+    prog: [['#/stats', '📊 Статистика'], ['#/repeat', '↻ На повторение'], ['#/notes', '📝 Заметки'], ['#/top', '⭐ Ключевые вопросы']],
+  };
+  function currentModule(h) {
+    const q = h.startsWith('#/q/') || h.startsWith('#/solve/') ? Q[h.replace(/^#\/(q|solve)\//, '')] : null;
+    if (q) { const m = MODULES.find(m => m.topic && m.topic === q.topic.slug); return m ? m.id : null; }
+    const t = h.match(/^#\/t\/(.+)$/); if (t) { const m = MODULES.find(m => m.topic === t[1]); return m ? m.id : null; }
+    const m = MODULES.find(m => m.re.test(h)); return m ? m.id : null;
+  }
+  function addTabs(h) {
+    const mod = currentModule(h); const tabs = TABS[mod]; const page = $('#content .page'); if (!tabs || !page) return;
+    const base = h.split('/').slice(0, 3).join('/');
+    const counts = { '#/repeat': ORDER.filter(q => st(q.id) === 'r').length, '#/notes': Object.keys(S.notes).filter(k => S.notes[k] && Q[k]).length };
+    const bar = document.createElement('div'); bar.className = 'page-tabs';
+    bar.innerHTML = tabs.map(([href, label]) => `<a href="${href}" class="${(h === href || base === href || (href !== '#/gloss' && h.startsWith(href + '/'))) ? 'on' : ''}">${label}${counts[href] ? `<span class="n">${counts[href]}</span>` : ''}</a>`).join('');
+    page.insertBefore(bar, page.firstChild);
+  }
+
+  // ---------- каталоги тренажёров ----------
+  const diffOf = q => (q.lc && q.lc.diff) || q.diff || '—';
+  const solvedState = q => st(q.id) === 'k' ? 'done' : S.code[q.id] ? 'draft' : 'new';
+  const STATE_LABEL = { done: '✓ решено', draft: '✎ черновик', new: '' };
+  let leetF = { diff: 'all', tag: 'all', state: 'all' };
+  function pageLeet() {
+    const tasks = topicQs(TOPIC.live);
+    const tags = [...new Set(tasks.flatMap(q => q.tags || []))].sort((a, b) => a.localeCompare(b, 'ru'));
+    const done = tasks.filter(q => solvedState(q) === 'done').length;
+    main().innerHTML = `<div class="page wide"><div class="crumbs"><a href="#/">Главная</a> · Тренажёры</div><h1 class="title">💻 LeetCode и лайфкодинг</h1>
+      <p class="subtitle">${plural(tasks.length, 'задача', 'задачи', 'задач')} · решено ${done}. Откройте задачу — она сразу запустится в режиме «решить самому»: условие, редактор, подсказки по шагам и разбор. Решение считается засчитанным, когда вы отметите задачу «✓ Знаю».</p>
+      <div class="cat-filters">
+        <div class="chips">${['all', 'Easy', 'Medium', 'Hard'].map(d => `<button class="chip${leetF.diff === d ? ' on' : ''}" data-diff="${d}">${d === 'all' ? 'Любая сложность' : d}</button>`).join('')}</div>
+        <div class="chips">${[['all', 'Все'], ['new', 'Не начаты'], ['draft', 'Черновик'], ['done', 'Решены']].map(([k, l]) => `<button class="chip${leetF.state === k ? ' on' : ''}" data-state="${k}">${l}</button>`).join('')}
+          <select id="leetTag" class="cat-select"><option value="all">Все техники</option>${tags.map(t => `<option${leetF.tag === t ? ' selected' : ''}>${esc(t)}</option>`).join('')}</select>
+          <a class="chip" href="#/pad">⌨️ Блокнот кода</a></div></div>
+      <div id="catList"></div></div>`;
+    const draw = () => {
+      const list = tasks.filter(q => (leetF.diff === 'all' || diffOf(q) === leetF.diff) && (leetF.tag === 'all' || (q.tags || []).includes(leetF.tag)) && (leetF.state === 'all' || solvedState(q) === leetF.state));
+      $('#catList').innerHTML = list.length ? `<div class="cat-table">${list.map((q, i) => { const s = solvedState(q); return `<a class="cat-row ${s}" href="#/solve/${q.id}">
+        <span class="cat-n">${q.lc ? 'LC ' + q.lc.num : i + 1}</span>
+        <span class="cat-t">${esc(q.q.replace(/\s*\(LeetCode[^)]*\)/, ''))}<span class="cat-tags">${(q.tags || []).map(t => `<i>${esc(t)}</i>`).join('')}</span></span>
+        <span class="badge ${diffOf(q).toLowerCase()}">${diffOf(q)}</span><span class="cat-s">${STATE_LABEL[s]}</span></a>`; }).join('')}</div>` : '<div class="empty">Нет задач по фильтру</div>';
+    };
+    draw();
+    $$('[data-diff]').forEach(b => b.onclick = () => { leetF.diff = b.dataset.diff; pageLeet(); });
+    $$('[data-state]').forEach(b => b.onclick = () => { leetF.state = b.dataset.state; pageLeet(); });
+    $('#leetTag').onchange = e => { leetF.tag = e.target.value; draw(); };
+    $('.main').scrollTop = 0;
+  }
+  let refF = { cat: 'all', size: 'all', state: 'all' };
+  const classCount = q => (q.starter || '').match(/^\s*(public\s+|final\s+|abstract\s+)*(class|interface|record|enum)\s+\w+/gm)?.length || 1;
+  const problemCount = q => { const sec = sectionOf(q.more, 'Найденные проблемы'); return Math.max(0, (sec.match(/<tr>/g) || []).length - 1); };
+  function pageRefCatalog() {
+    const tasks = topicQs(TOPIC.refactor);
+    const cats = [...new Set(tasks.map(q => q.sec))];
+    const done = tasks.filter(q => solvedState(q) === 'done').length;
+    main().innerHTML = `<div class="page wide"><div class="crumbs"><a href="#/">Главная</a> · Тренажёры</div><h1 class="title">🛠 Практикум рефакторинга</h1>
+      <p class="subtitle">${plural(tasks.length, 'задача', 'задачи', 'задач')} с плохим кодом · выполнено ${done}. Код открывается прямо в редакторе: найдите проблемы, исправьте, затем сверьтесь с подсказками, разбором и решением. Теория — в теме «<a href="#/t/clean">Чистый код</a>».</p>
+      <div class="cat-filters">
+        <div class="chips"><button class="chip${refF.cat === 'all' ? ' on' : ''}" data-cat="all">Все</button>${cats.map(c => `<button class="chip${refF.cat === c ? ' on' : ''}" data-cat="${esc(c)}">${esc(c)}</button>`).join('')}</div>
+        <div class="chips">${[['all', 'Любой объём'], ['one', 'Один класс'], ['many', 'Несколько классов']].map(([k, l]) => `<button class="chip${refF.size === k ? ' on' : ''}" data-size="${k}">${l}</button>`).join('')}
+          ${[['all', 'Все'], ['new', 'Не начаты'], ['draft', 'Черновик'], ['done', 'Выполнены']].map(([k, l]) => `<button class="chip${refF.state === k ? ' on' : ''}" data-state="${k}">${l}</button>`).join('')}
+          <a class="chip" href="#/pad">⌨️ Блокнот кода</a></div></div>
+      <div id="catList"></div></div>`;
+    const list = tasks.filter(q => (refF.cat === 'all' || q.sec === refF.cat) && (refF.size === 'all' || (refF.size === 'many') === (classCount(q) > 1)) && (refF.state === 'all' || solvedState(q) === refF.state));
+    $('#catList').innerHTML = list.length ? `<div class="cat-table">${list.map((q, i) => { const s = solvedState(q), n = classCount(q); return `<a class="cat-row ${s}" href="#/solve/${q.id}">
+      <span class="cat-n">${i + 1}</span>
+      <span class="cat-t">${esc(q.q)}<span class="cat-tags"><i>${esc(q.sec)}</i><i>${n > 1 ? plural(n, 'класс', 'класса', 'классов') : 'один класс'}</i><i>${plural(problemCount(q), 'проблема', 'проблемы', 'проблем')}</i></span></span>
+      <span class="cat-s">${STATE_LABEL[s]}</span></a>`; }).join('')}</div>` : '<div class="empty">Нет задач по фильтру</div>';
+    $$('[data-cat]').forEach(b => b.onclick = () => { refF.cat = b.dataset.cat; pageRefCatalog(); });
+    $$('[data-size]').forEach(b => b.onclick = () => { refF.size = b.dataset.size; pageRefCatalog(); });
+    $$('[data-state]').forEach(b => b.onclick = () => { refF.state = b.dataset.state; pageRefCatalog(); });
+    $('.main').scrollTop = 0;
+  }
+  function openSolve(id) {
+    const q = Q[id]; if (!q) return pageHome();
+    pageTopic(q.topic.slug, id);
+    const card = $('#q-' + CSS.escape(id)); if (!card) return;
+    card.dataset.solve = '1'; fillCard(card);
+  }
+
+  function renderBottomBar(h) {
+    const bb = $('#bottomBar'); if (!bb) return; const mod = currentModule(h || location.hash || '#/');
+    bb.innerHTML = [['#/', '🏠', 'Главная', 'home'], ['menu', '📚', 'Темы', ''], ['#/leetcode', '💻', 'LeetCode', 'leet'], ['#/quiz', '🧪', 'Тесты', 'tests'], ['#/stats', '📊', 'Прогресс', 'prog']]
+      .map(([href, i, t, id]) => href === 'menu' ? `<button class="bb-i" id="bbMenu"><span>${i}</span>${t}</button>` : `<a class="bb-i${mod === id ? ' on' : ''}" href="${href}"><span>${i}</span>${t}</a>`).join('');
+    $('#bbMenu').onclick = () => setNav(true);
+  }
+  // ---------- мобильное меню ----------
+  const isMobile = () => matchMedia('(max-width: 900px)').matches;
+  function setNav(open) { document.body.classList.toggle('nav-open', open); }
+  $('#menuBtn').onclick = () => setNav(!document.body.classList.contains('nav-open'));
+  $('#navScrim').onclick = () => setNav(false);
+  document.addEventListener('click', e => { if (isMobile() && e.target.closest('.sidebar a[href^="#"]')) setNav(false); });
+
   // ---------- роутер ----------
   function route() {
     const h = decodeURIComponent(location.hash || '#/');
-    tip.classList.remove('show'); sDrop().classList.remove('open'); sInput().blur(); QZ = null;
+    tip.classList.remove('show'); sDrop().classList.remove('open'); sInput().blur(); QZ = null; setNav(false);
     let m;
-    if ((m = h.match(/^#\/t\/(.+)$/))) { if (TOPIC[m[1]] !== curTopicPage) topicFilter = 'all'; curTopicPage = TOPIC[m[1]]; pageTopic(m[1]); }
+    if ((m = h.match(/^#\/t\/([^/]+)\/do$/)) && TOPIC[m[1]]) { curTopicPage = null; pageDoDont(m[1]); }
+    else if (h === '#/dodont') { curTopicPage = null; pageDoDontAll(); }
+    else if ((m = h.match(/^#\/t\/(.+)$/))) { if (TOPIC[m[1]] !== curTopicPage) topicFilter = 'all'; curTopicPage = TOPIC[m[1]]; pageTopic(m[1]); }
     else if ((m = h.match(/^#\/q\/(.+)$/)) && Q[m[1]]) { const q = Q[m[1]]; if (curTopicPage !== q.topic) topicFilter = 'all'; curTopicPage = q.topic; pageTopic(q.topic.slug, q.id); }
+    else if (EXT.some(x => (m = h.match(x.re)) && (curTopicPage = null, x.page(API, m), true))) { }
+    else if ((m = h.match(/^#\/solve\/(.+)$/)) && Q[m[1]]) { curTopicPage = Q[m[1]].topic; topicFilter = 'all'; openSolve(m[1]); }
+    else if (h === '#/leetcode') { curTopicPage = null; pageLeet(); }
+    else if (h === '#/refactor') { curTopicPage = null; pageRefCatalog(); }
     else if (h === '#/top') { curTopicPage = null; pageTop(); }
     else if (h === '#/notes') { curTopicPage = null; pageNotes(); }
     else if ((m = h.match(/^#\/road(?:\/(.+))?$/))) { curTopicPage = null; pageRoad(m[1]); }
     else if (h === '#/exam') { curTopicPage = null; pageExam(); }
     else if (h === '#/stats') { curTopicPage = null; pageStats(); }
     else if (h === '#/gloss') { curTopicPage = null; pageGloss(); }
+    else if (h === '#/gloss/train') { curTopicPage = null; pageGlossTrain(); }
+    else if (h === '#/compare') { curTopicPage = null; pageCompare(); }
     else if ((m = h.match(/^#\/pad(?:\/(.+))?$/))) { curTopicPage = null; pagePad(m[1]); }
     else if (h === '#/repeat') { curTopicPage = null; pageRepeat(); }
     else if ((m = h.match(/^#\/train(?:\/(.+))?$/))) { curTopicPage = null; pageTrain(m[1]); }
     else if ((m = h.match(/^#\/quiz(?:\/(.+))?$/))) { curTopicPage = null; pageQuiz(m[1]); }
     else if ((m = h.match(/^#\/search\/(.+)$/))) { curTopicPage = null; pageSearch(m[1]); }
     else { curTopicPage = null; pageHome(); }
-    renderNav();
+    addTabs(h); renderNav(); renderBottomBar(h);
   }
   let curTopicPage = null;
 
@@ -985,6 +1301,7 @@
 
   // ---------- старт ----------
   applyTheme(); renderLevelSeg(); renderProfile();
+  setTimeout(versionHint, 800);
   window.addEventListener('hashchange', route);
   route();
 })();

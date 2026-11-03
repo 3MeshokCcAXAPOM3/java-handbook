@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 610" font-family="Segoe UI, Inter, Arial, sans-serif">
+  <rect width="960" height="610" fill="#1c1f26"/>
+  <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#8a909c"/></marker></defs>
+  <text x="480" y="38" text-anchor="middle" font-size="24" font-weight="700" fill="#e3e5ea">Сборка мусора по поколениям</text>
+  <text x="480" y="62" text-anchor="middle" font-size="14" fill="#9aa0ac">Гипотеза поколений: большинство объектов умирает молодыми — поэтому молодую часть чистят часто и быстро</text>
+
+  <!-- поток -->
+  <rect x="30" y="96" width="140" height="70" rx="12" fill="#23272f" stroke="#6d7380"/>
+  <text x="100" y="126" text-anchor="middle" font-size="15" font-weight="700" fill="#e3e5ea">new Order()</text>
+  <text x="100" y="148" text-anchor="middle" font-size="12.5" fill="#9aa0ac">выделение в TLAB</text>
+  <line x1="170" y1="131" x2="214" y2="131" stroke="#9aa0ac" stroke-width="2" marker-end="url(#a)"/>
+  <rect x="218" y="86" width="190" height="90" rx="12" fill="#17352a" stroke="#1f9d6b" stroke-width="1.5"/>
+  <text x="313" y="120" text-anchor="middle" font-size="17" font-weight="700" fill="#3ccf94">Eden</text>
+  <text x="313" y="144" text-anchor="middle" font-size="12.5" fill="#e3e5ea">заполнился →</text>
+  <text x="313" y="161" text-anchor="middle" font-size="12.5" fill="#e3e5ea">Minor GC</text>
+  <line x1="408" y1="131" x2="452" y2="131" stroke="#9aa0ac" stroke-width="2" marker-end="url(#a)"/>
+  <rect x="456" y="86" width="190" height="90" rx="12" fill="#1b3a2e" stroke="#1f9d6b" stroke-width="1.5"/>
+  <text x="551" y="116" text-anchor="middle" font-size="17" font-weight="700" fill="#3ccf94">Survivor S0 ⇄ S1</text>
+  <text x="551" y="140" text-anchor="middle" font-size="12.5" fill="#e3e5ea">живые копируются,</text>
+  <text x="551" y="157" text-anchor="middle" font-size="12.5" fill="#e3e5ea">возраст +1 за сборку</text>
+  <line x1="646" y1="131" x2="690" y2="131" stroke="#9aa0ac" stroke-width="2" marker-end="url(#a)"/>
+  <rect x="694" y="86" width="236" height="90" rx="12" fill="#252c47" stroke="#4f6bed" stroke-width="1.5"/>
+  <text x="812" y="116" text-anchor="middle" font-size="17" font-weight="700" fill="#a9b8ff">Old generation</text>
+  <text x="812" y="140" text-anchor="middle" font-size="12.5" fill="#e3e5ea">возраст ≥ порога (до 15)</text>
+  <text x="812" y="157" text-anchor="middle" font-size="12.5" fill="#e3e5ea">или крупный объект</text>
+  <text x="313" y="200" text-anchor="middle" font-size="13" fill="#f07399" font-weight="600">мёртвые объекты</text>
+  <text x="313" y="217" text-anchor="middle" font-size="13" fill="#f07399" font-weight="600">просто отбрасываются</text>
+  <text x="812" y="200" text-anchor="middle" font-size="13" fill="#a9b8ff" font-weight="600">чистится реже:</text>
+  <text x="812" y="217" text-anchor="middle" font-size="13" fill="#a9b8ff" font-weight="600">mixed / major / full GC</text>
+
+  <!-- как определяется мусор -->
+  <rect x="30" y="242" width="900" height="100" rx="14" fill="#3a2d16" stroke="#d98a1c"/>
+  <text x="50" y="268" font-size="15" font-weight="700" fill="#f0b04a">Как GC находит мусор: трассировка от GC roots</text>
+  <text x="50" y="292" font-size="13.5" fill="#e3e5ea">Корни: локальные переменные в стеках потоков, static-поля, JNI-ссылки, живые потоки.</text>
+  <text x="50" y="311" font-size="13.5" fill="#e3e5ea">Всё, до чего нельзя дойти по ссылкам от корней, — мусор. Циклические ссылки (A ⇄ B) сборке не мешают,</text>
+  <text x="50" y="330" font-size="13.5" fill="#e3e5ea">а «забытая» ссылка в static-коллекции держит объекты вечно — классическая утечка памяти.</text>
+
+  <!-- G1 регионы -->
+  <text x="30" y="376" font-size="16" font-weight="700" fill="#e3e5ea">G1 (по умолчанию): куча — набор регионов одинакового размера</text>
+  <g font-size="13" font-weight="700" text-anchor="middle">
+    <rect x="30" y="390" width="54" height="40" rx="6" fill="#1f9d6b"/><text x="57" y="415" fill="#fff">E</text>
+    <rect x="90" y="390" width="54" height="40" rx="6" fill="#4f6bed"/><text x="117" y="415" fill="#fff">O</text>
+    <rect x="150" y="390" width="54" height="40" rx="6" fill="#1f9d6b"/><text x="177" y="415" fill="#fff">E</text>
+    <rect x="210" y="390" width="54" height="40" rx="6" fill="#2f3440"/><text x="237" y="415" fill="#9aa0ac">·</text>
+    <rect x="270" y="390" width="54" height="40" rx="6" fill="#4f6bed"/><text x="297" y="415" fill="#fff">O</text>
+    <rect x="330" y="390" width="54" height="40" rx="6" fill="#2f6f55"/><text x="357" y="415" fill="#e3e5ea">S</text>
+    <rect x="390" y="390" width="114" height="40" rx="6" fill="#c2456b"/><text x="447" y="415" fill="#fff">H (огромный)</text>
+    <rect x="30" y="436" width="54" height="40" rx="6" fill="#4f6bed"/><text x="57" y="461" fill="#fff">O</text>
+    <rect x="90" y="436" width="54" height="40" rx="6" fill="#2f3440"/><text x="117" y="461" fill="#9aa0ac">·</text>
+    <rect x="150" y="436" width="54" height="40" rx="6" fill="#4f6bed"/><text x="177" y="461" fill="#fff">O</text>
+    <rect x="210" y="436" width="54" height="40" rx="6" fill="#1f9d6b"/><text x="237" y="461" fill="#fff">E</text>
+    <rect x="270" y="436" width="54" height="40" rx="6" fill="#2f3440"/><text x="297" y="461" fill="#9aa0ac">·</text>
+    <rect x="330" y="436" width="54" height="40" rx="6" fill="#1f9d6b"/><text x="357" y="461" fill="#fff">E</text>
+    <rect x="390" y="436" width="54" height="40" rx="6" fill="#4f6bed"/><text x="417" y="461" fill="#fff">O</text>
+    <rect x="450" y="436" width="54" height="40" rx="6" fill="#2f3440"/><text x="477" y="461" fill="#9aa0ac">·</text>
+  </g>
+  <g font-size="13" fill="#e3e5ea">
+    <rect x="30" y="494" width="16" height="16" rx="3" fill="#1f9d6b"/><text x="54" y="507">E — Eden</text>
+    <rect x="150" y="494" width="16" height="16" rx="3" fill="#2f6f55"/><text x="174" y="507">S — Survivor</text>
+    <rect x="290" y="494" width="16" height="16" rx="3" fill="#4f6bed"/><text x="314" y="507">O — Old</text>
+    <rect x="30" y="520" width="16" height="16" rx="3" fill="#c2456b"/><text x="54" y="533">H — humongous (объект больше половины региона)</text>
+    <rect x="30" y="546" width="16" height="16" rx="3" fill="#2f3440"/><text x="54" y="559">свободный регион</text>
+  </g>
+  <rect x="540" y="390" width="390" height="190" rx="14" fill="#23272f" stroke="#3a3f4b"/>
+  <text x="560" y="416" font-size="15" font-weight="700" fill="#e3e5ea">Какой сборщик выбрать</text>
+  <text x="560" y="442" font-size="13.5" fill="#e3e5ea"><tspan font-weight="700">G1</tspan> — универсальный, цель паузы</text>
+  <text x="560" y="460" font-size="13.5" fill="#9aa0ac">-XX:MaxGCPauseMillis (по умолчанию 200 мс)</text>
+  <text x="560" y="486" font-size="13.5" fill="#e3e5ea"><tspan font-weight="700">ZGC</tspan> — паузы &lt; 1 мс на любых кучах</text>
+  <text x="560" y="504" font-size="13.5" fill="#9aa0ac">поколенческий с Java 21, ценой части CPU</text>
+  <text x="560" y="530" font-size="13.5" fill="#e3e5ea"><tspan font-weight="700">Parallel</tspan> — максимум пропускной</text>
+  <text x="560" y="548" font-size="13.5" fill="#9aa0ac">способности для пакетных задач</text>
+  <text x="560" y="570" font-size="13.5" fill="#e3e5ea"><tspan font-weight="700">Serial</tspan> — маленькие кучи, 1 CPU</text>
+</svg>

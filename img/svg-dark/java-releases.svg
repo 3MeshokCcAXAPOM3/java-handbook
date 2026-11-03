@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 560" font-family="Segoe UI, Inter, Arial, sans-serif">
+  <rect width="960" height="560" fill="#1c1f26"/>
+  <text x="480" y="38" text-anchor="middle" font-size="24" font-weight="700" fill="#e3e5ea">Версии Java: LTS и ключевые возможности</text>
+  <text x="480" y="62" text-anchor="middle" font-size="14" fill="#9aa0ac">С 2018 года новая версия выходит каждые 6 месяцев (март и сентябрь), LTS — раз в 2 года</text>
+
+  <line x1="40" y1="150" x2="920" y2="150" stroke="#3a3f4b" stroke-width="6" stroke-linecap="round"/>
+  <g text-anchor="middle">
+    <circle cx="80" cy="150" r="30" fill="#4f6bed"/><text x="80" y="157" font-size="18" font-weight="700" fill="#fff">8</text><text x="80" y="104" font-size="12.5" fill="#e3e5ea">2014</text>
+    <circle cx="230" cy="150" r="30" fill="#4f6bed"/><text x="230" y="157" font-size="18" font-weight="700" fill="#fff">11</text><text x="230" y="104" font-size="12.5" fill="#e3e5ea">2018</text>
+    <circle cx="390" cy="150" r="30" fill="#4f6bed"/><text x="390" y="157" font-size="18" font-weight="700" fill="#fff">17</text><text x="390" y="104" font-size="12.5" fill="#e3e5ea">2021</text>
+    <circle cx="550" cy="150" r="30" fill="#1f9d6b"/><text x="550" y="157" font-size="18" font-weight="700" fill="#fff">21</text><text x="550" y="104" font-size="12.5" fill="#e3e5ea">2023</text>
+    <circle cx="710" cy="150" r="30" fill="#1f9d6b"/><text x="710" y="157" font-size="18" font-weight="700" fill="#fff">25</text><text x="710" y="104" font-size="12.5" fill="#e3e5ea">2025</text>
+    <circle cx="830" cy="150" r="20" fill="#1c1f26" stroke="#6d7380" stroke-width="2"/><text x="830" y="155" font-size="13" font-weight="700" fill="#9aa0ac">26</text><text x="830" y="104" font-size="12.5" fill="#e3e5ea">2026</text>
+    <circle cx="900" cy="150" r="22" fill="#1c1f26" stroke="#1f9d6b" stroke-width="2" stroke-dasharray="4 3"/><text x="900" y="155" font-size="13" font-weight="700" fill="#3ccf94">29</text><text x="900" y="104" font-size="12.5" fill="#e3e5ea">2027</text>
+  </g>
+  <g font-size="12" fill="#9aa0ac" text-anchor="middle">
+    <text x="310" y="196">12–16: не-LTS</text><text x="470" y="196">18–20</text><text x="630" y="196">22–24</text><text x="865" y="196">следующая LTS</text>
+  </g>
+
+  <g font-size="12.5" fill="#e3e5ea">
+    <rect x="24" y="220" width="142" height="230" rx="12" fill="#252c47"/>
+    <text x="36" y="244" font-weight="700" fill="#a9b8ff">Java 8</text>
+    <text x="36" y="268">лямбды</text><text x="36" y="288">Stream API</text><text x="36" y="308">Optional</text><text x="36" y="328">java.time</text><text x="36" y="348">default-методы</text><text x="36" y="368">Metaspace</text>
+
+    <rect x="174" y="220" width="142" height="230" rx="12" fill="#252c47"/>
+    <text x="186" y="244" font-weight="700" fill="#a9b8ff">Java 11</text>
+    <text x="186" y="268">модули (9)</text><text x="186" y="288">var (10)</text><text x="186" y="308">List.of (9)</text><text x="186" y="328">HttpClient</text><text x="186" y="348">G1 по умолчанию</text><text x="186" y="368">нет Java EE</text>
+
+    <rect x="324" y="220" width="142" height="230" rx="12" fill="#252c47"/>
+    <text x="336" y="244" font-weight="700" fill="#a9b8ff">Java 17</text>
+    <text x="336" y="268">records</text><text x="336" y="288">sealed</text><text x="336" y="308">switch-выражения</text><text x="336" y="328">текстовые блоки</text><text x="336" y="348">instanceof</text><text x="336" y="364">с паттерном</text><text x="336" y="388" fill="#9aa0ac">минимум для</text><text x="336" y="404" fill="#9aa0ac">Spring Boot 3</text>
+
+    <rect x="474" y="220" width="152" height="230" rx="12" fill="#17352a"/>
+    <text x="486" y="244" font-weight="700" fill="#3ccf94">Java 21</text>
+    <text x="486" y="268">виртуальные</text><text x="486" y="284">потоки</text><text x="486" y="308">pattern matching</text><text x="486" y="324">в switch</text><text x="486" y="348">record patterns</text><text x="486" y="372">Sequenced</text><text x="486" y="388">Collections</text><text x="486" y="412">поколенческий ZGC</text>
+
+    <rect x="634" y="220" width="152" height="230" rx="12" fill="#17352a"/>
+    <text x="646" y="244" font-weight="700" fill="#3ccf94">Java 25</text>
+    <text x="646" y="268">Scoped Values</text><text x="646" y="292">Stream Gatherers</text><text x="646" y="316">гибкие тела</text><text x="646" y="332">конструкторов</text><text x="646" y="356">compact source</text><text x="646" y="372">files, import module</text><text x="646" y="396">AOT cache,</text><text x="646" y="412">compact headers</text>
+
+    <rect x="794" y="220" width="142" height="230" rx="12" fill="#23272f"/>
+    <text x="806" y="244" font-weight="700" fill="#e3e5ea">Дальше</text>
+    <text x="806" y="268">Valhalla:</text><text x="806" y="284">value-классы</text><text x="806" y="308">Leyden:</text><text x="806" y="324">быстрый старт</text><text x="806" y="348">Structured</text><text x="806" y="364">Concurrency</text><text x="806" y="388" fill="#9aa0ac">preview-фичи</text><text x="806" y="404" fill="#9aa0ac">в 26 и далее</text>
+  </g>
+
+  <rect x="24" y="466" width="912" height="80" rx="14" fill="#3a2d16" stroke="#d98a1c"/>
+  <text x="44" y="492" font-size="14" font-weight="700" fill="#f0b04a">Как выбирать</text>
+  <text x="44" y="516" font-size="12.5" fill="#e3e5ea">В продакшне — LTS: сейчас 21 или 25 (17 — для старых проектов). Не-LTS — чтобы пробовать новое: поддержка лишь до следующего релиза.</text>
+  <text x="44" y="536" font-size="12.5" fill="#e3e5ea">Preview-возможности включаются флагом --enable-preview и могут измениться; incubator — экспериментальные API в модулях jdk.incubator.*</text>
+</svg>

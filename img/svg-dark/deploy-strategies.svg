@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 620" font-family="Segoe UI, Inter, Arial, sans-serif">
+  <rect width="960" height="620" fill="#1c1f26"/>
+  <text x="480" y="38" text-anchor="middle" font-size="24" font-weight="700" fill="#e3e5ea">Стратегии развёртывания</text>
+  <g font-size="12" text-anchor="middle">
+    <rect x="610" y="52" width="16" height="16" rx="4" fill="#4f6bed"/><text x="660" y="65">v1</text>
+    <rect x="690" y="52" width="16" height="16" rx="4" fill="#1f9d6b"/><text x="740" y="65">v2</text>
+    <rect x="770" y="52" width="16" height="16" rx="4" fill="#2f3440"/><text x="840" y="65">нет экземпляра</text>
+  </g>
+
+  <!-- Recreate -->
+  <rect x="24" y="80" width="448" height="150" rx="16" fill="#23272f"/>
+  <text x="44" y="106" font-size="16" font-weight="700" fill="#e3e5ea">Recreate</text>
+  <g>
+    <rect x="44" y="122" width="40" height="28" rx="6" fill="#4f6bed"/><rect x="88" y="122" width="40" height="28" rx="6" fill="#4f6bed"/><rect x="132" y="122" width="40" height="28" rx="6" fill="#4f6bed"/>
+    <text x="190" y="141" font-size="16" fill="#9aa0ac">→</text>
+    <rect x="212" y="122" width="40" height="28" rx="6" fill="#2f3440"/><rect x="256" y="122" width="40" height="28" rx="6" fill="#2f3440"/><rect x="300" y="122" width="40" height="28" rx="6" fill="#2f3440"/>
+    <text x="358" y="141" font-size="16" fill="#9aa0ac">→</text>
+    <rect x="380" y="122" width="24" height="28" rx="6" fill="#1f9d6b"/><rect x="408" y="122" width="24" height="28" rx="6" fill="#1f9d6b"/><rect x="436" y="122" width="24" height="28" rx="6" fill="#1f9d6b"/>
+  </g>
+  <text x="44" y="180" font-size="12.5" fill="#e3e5ea">остановить всё старое, затем запустить новое</text>
+  <text x="44" y="200" font-size="12.5" fill="#f07399">− простой</text><text x="140" y="200" font-size="12.5" fill="#3ccf94">+ версии не смешиваются</text>
+
+  <!-- Rolling -->
+  <rect x="488" y="80" width="448" height="150" rx="16" fill="#252c47"/>
+  <text x="508" y="106" font-size="16" font-weight="700" fill="#a9b8ff">Rolling update (Kubernetes)</text>
+  <g>
+    <rect x="508" y="122" width="34" height="28" rx="6" fill="#4f6bed"/><rect x="546" y="122" width="34" height="28" rx="6" fill="#4f6bed"/><rect x="584" y="122" width="34" height="28" rx="6" fill="#4f6bed"/>
+    <text x="632" y="141" font-size="16" fill="#9aa0ac">→</text>
+    <rect x="652" y="122" width="34" height="28" rx="6" fill="#1f9d6b"/><rect x="690" y="122" width="34" height="28" rx="6" fill="#4f6bed"/><rect x="728" y="122" width="34" height="28" rx="6" fill="#4f6bed"/>
+    <text x="776" y="141" font-size="16" fill="#9aa0ac">→</text>
+    <rect x="796" y="122" width="34" height="28" rx="6" fill="#1f9d6b"/><rect x="834" y="122" width="34" height="28" rx="6" fill="#1f9d6b"/><rect x="872" y="122" width="34" height="28" rx="6" fill="#1f9d6b"/>
+  </g>
+  <text x="508" y="180" font-size="12.5" fill="#e3e5ea">поды заменяются по одному (maxSurge, maxUnavailable)</text>
+  <text x="508" y="200" font-size="12.5" fill="#3ccf94">+ без простоя</text><text x="610" y="200" font-size="12.5" fill="#f07399">− v1 и v2 работают одновременно</text>
+
+  <!-- Blue-Green -->
+  <rect x="24" y="246" width="448" height="170" rx="16" fill="#17352a"/>
+  <text x="44" y="272" font-size="16" font-weight="700" fill="#3ccf94">Blue-Green</text>
+  <rect x="44" y="288" width="120" height="40" rx="10" fill="#1c1f26" stroke="#6d7380"/><text x="104" y="313" text-anchor="middle" font-size="13" fill="#e3e5ea">Балансировщик</text>
+  <rect x="236" y="284" width="210" height="34" rx="8" fill="#4f6bed"/><text x="341" y="306" text-anchor="middle" font-size="12.5" fill="#fff">Blue: v1 (полная среда)</text>
+  <rect x="236" y="326" width="210" height="34" rx="8" fill="#1f9d6b"/><text x="341" y="348" text-anchor="middle" font-size="12.5" fill="#fff">Green: v2 (полная среда)</text>
+  <line x1="164" y1="302" x2="232" y2="302" stroke="#6d7380" stroke-width="2" stroke-dasharray="5 4"/>
+  <line x1="164" y1="314" x2="232" y2="342" stroke="#1f9d6b" stroke-width="3"/>
+  <text x="44" y="384" font-size="12.5" fill="#e3e5ea">трафик переключается целиком, откат — переключить обратно</text>
+  <text x="44" y="404" font-size="12.5" fill="#3ccf94">+ мгновенный откат</text><text x="180" y="404" font-size="12.5" fill="#f07399">− двойные ресурсы, схема БД общая</text>
+
+  <!-- Canary -->
+  <rect x="488" y="246" width="448" height="170" rx="16" fill="#3a2d16"/>
+  <text x="508" y="272" font-size="16" font-weight="700" fill="#f0b04a">Canary</text>
+  <g font-size="12" fill="#e3e5ea">
+    <text x="508" y="300">доля трафика на v2:</text>
+    <rect x="640" y="288" width="276" height="16" rx="8" fill="#4f6bed"/><rect x="640" y="288" width="14" height="16" rx="8" fill="#1f9d6b"/><text x="908" y="300" text-anchor="end" fill="#fff" font-weight="700">5%</text>
+    <rect x="640" y="312" width="276" height="16" rx="8" fill="#4f6bed"/><rect x="640" y="312" width="69" height="16" rx="8" fill="#1f9d6b"/><text x="676" y="324" text-anchor="middle" fill="#fff" font-weight="700">25%</text>
+    <rect x="640" y="336" width="276" height="16" rx="8" fill="#1f9d6b"/><text x="778" y="348" text-anchor="middle" fill="#fff" font-weight="700">100%</text>
+  </g>
+  <text x="508" y="384" font-size="12.5" fill="#e3e5ea">на каждом шаге сравниваются ошибки и задержки</text>
+  <text x="508" y="404" font-size="12.5" fill="#3ccf94">+ риск ограничен</text><text x="630" y="404" font-size="12.5" fill="#f07399">− нужны метрики и автоматизация</text>
+
+  <!-- Shadow / AB -->
+  <rect x="24" y="432" width="448" height="110" rx="16" fill="#3d1f2a"/>
+  <text x="44" y="458" font-size="16" font-weight="700" fill="#f07399">Shadow (mirroring)</text>
+  <text x="44" y="482" font-size="12.5" fill="#e3e5ea">копия трафика идёт в v2, её ответы отбрасываются;</text>
+  <text x="44" y="500" font-size="12.5" fill="#e3e5ea">проверка под реальной нагрузкой без риска для пользователей</text>
+  <text x="44" y="522" font-size="12.5" fill="#f07399">− побочные эффекты (платежи, письма) нужно отключать</text>
+  <rect x="488" y="432" width="448" height="110" rx="16" fill="#23272f"/>
+  <text x="508" y="458" font-size="16" font-weight="700" fill="#e3e5ea">A/B-тестирование и feature flags</text>
+  <text x="508" y="482" font-size="12.5" fill="#e3e5ea">версии или функции — для сегментов пользователей;</text>
+  <text x="508" y="500" font-size="12.5" fill="#e3e5ea">цель — продуктовые метрики. Флаги отделяют релиз</text>
+  <text x="508" y="518" font-size="12.5" fill="#e3e5ea">функции от деплоя кода</text>
+
+  <rect x="24" y="556" width="912" height="52" rx="12" fill="#23272f"/>
+  <text x="480" y="578" text-anchor="middle" font-size="13" fill="#e3e5ea">Без простоя возможно только при обратной совместимости API, событий и схемы БД (миграции expand → contract),</text>
+  <text x="480" y="597" text-anchor="middle" font-size="13" fill="#e3e5ea">корректных readiness-пробах и graceful shutdown. Инструменты: Argo Rollouts, Flagger, service mesh.</text>
+</svg>

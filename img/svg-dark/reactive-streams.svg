@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" font-family="Segoe UI, Inter, Arial, sans-serif">
+  <rect width="960" height="600" fill="#1c1f26"/>
+  <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#8a909c"/></marker></defs>
+  <text x="480" y="38" text-anchor="middle" font-size="24" font-weight="700" fill="#e3e5ea">Reactive Streams: Mono, Flux и backpressure</text>
+
+  <!-- протокол -->
+  <rect x="24" y="60" width="912" height="190" rx="16" fill="#252c47"/>
+  <text x="44" y="86" font-size="15" font-weight="700" fill="#a9b8ff">Протокол Publisher ⇄ Subscriber</text>
+  <rect x="44" y="104" width="180" height="128" rx="12" fill="#4f6bed"/>
+  <text x="134" y="160" text-anchor="middle" font-size="15" font-weight="700" fill="#fff">Publisher</text>
+  <text x="134" y="182" text-anchor="middle" font-size="12" fill="#e9edfe">Flux / Mono</text>
+  <rect x="736" y="104" width="180" height="128" rx="12" fill="#1f9d6b"/>
+  <text x="826" y="160" text-anchor="middle" font-size="15" font-weight="700" fill="#fff">Subscriber</text>
+  <text x="826" y="182" text-anchor="middle" font-size="12" fill="#e3f5ec">ваш код / WebFlux</text>
+  <g font-size="12.5" fill="#e3e5ea" font-family="Consolas, monospace">
+    <line x1="732" y1="120" x2="228" y2="120" stroke="#9aa0ac" stroke-width="2" marker-end="url(#a)"/><text x="480" y="114" text-anchor="middle">1. subscribe(subscriber)</text>
+    <line x1="228" y1="146" x2="732" y2="146" stroke="#9aa0ac" stroke-width="2" marker-end="url(#a)"/><text x="480" y="140" text-anchor="middle">2. onSubscribe(subscription)</text>
+    <line x1="732" y1="172" x2="228" y2="172" stroke="#d98a1c" stroke-width="2.5" marker-end="url(#a)"/><text x="480" y="166" text-anchor="middle" fill="#f0b04a" font-weight="700">3. request(n) — «готов принять n элементов»</text>
+    <line x1="228" y1="198" x2="732" y2="198" stroke="#1f9d6b" stroke-width="2" marker-end="url(#a)"/><text x="480" y="192" text-anchor="middle">4. onNext(item) × не больше n</text>
+    <line x1="228" y1="224" x2="732" y2="224" stroke="#9aa0ac" stroke-width="2" marker-end="url(#a)"/><text x="480" y="218" text-anchor="middle">5. onComplete() или onError(e)</text>
+  </g>
+
+  <!-- marble -->
+  <rect x="24" y="266" width="448" height="180" rx="16" fill="#23272f"/>
+  <text x="44" y="292" font-size="15" font-weight="700" fill="#e3e5ea">Flux: 0..N элементов</text>
+  <line x1="44" y1="330" x2="440" y2="330" stroke="#9aa0ac" stroke-width="2" marker-end="url(#a)"/>
+  <circle cx="90" cy="330" r="13" fill="#4f6bed"/><circle cx="160" cy="330" r="13" fill="#d98a1c"/><circle cx="230" cy="330" r="13" fill="#1f9d6b"/><circle cx="300" cy="330" r="13" fill="#c2456b"/>
+  <line x1="370" y1="316" x2="370" y2="344" stroke="#9aa0ac" stroke-width="3"/>
+  <text x="378" y="312" font-size="12" fill="#9aa0ac">complete</text>
+  <text x="44" y="372" font-size="12.5" fill="#e3e5ea" font-family="Consolas, monospace">.map(x -&gt; x * 2) .filter(…) .flatMap(…)</text>
+  <line x1="44" y1="404" x2="440" y2="404" stroke="#9aa0ac" stroke-width="2" marker-end="url(#a)"/>
+  <circle cx="110" cy="404" r="13" fill="#4f6bed"/><circle cx="250" cy="404" r="13" fill="#1f9d6b"/>
+  <text x="322" y="410" font-size="18" font-weight="700" fill="#f07399">✕</text>
+  <text x="300" y="390" font-size="12" fill="#9aa0ac">error завершает поток</text>
+  <text x="44" y="432" font-size="12" fill="#9aa0ac">операторы создают новый поток; ничего не выполняется без subscribe()</text>
+
+  <rect x="488" y="266" width="448" height="180" rx="16" fill="#23272f"/>
+  <text x="508" y="292" font-size="15" font-weight="700" fill="#e3e5ea">Mono: 0..1 элемент</text>
+  <line x1="508" y1="330" x2="904" y2="330" stroke="#9aa0ac" stroke-width="2" marker-end="url(#a)"/>
+  <circle cx="620" cy="330" r="13" fill="#4f6bed"/>
+  <line x1="680" y1="316" x2="680" y2="344" stroke="#9aa0ac" stroke-width="3"/>
+  <g font-size="12.5" fill="#e3e5ea">
+    <text x="508" y="372">HTTP-ответ, запись в БД, одиночный результат.</text>
+    <text x="508" y="394" font-family="Consolas, monospace">Mono&lt;Order&gt; findById(id)</text>
+    <text x="508" y="416" font-family="Consolas, monospace">Flux&lt;Order&gt; findAllByStatus(s)</text>
+    <text x="508" y="436" fill="#9aa0ac">Mono.empty() — «нет результата» вместо null</text>
+  </g>
+
+  <rect x="24" y="462" width="912" height="126" rx="16" fill="#3a2d16" stroke="#d98a1c"/>
+  <text x="44" y="488" font-size="15" font-weight="700" fill="#f0b04a">Backpressure и потоки выполнения</text>
+  <g font-size="12.5" fill="#e3e5ea">
+    <text x="44" y="512">• медленный потребитель запрашивает меньше: request(n) не даёт производителю переполнить память</text>
+    <text x="44" y="534">• если источник не умеет ждать: onBackpressureBuffer, onBackpressureDrop, onBackpressureLatest, limitRate</text>
+    <text x="44" y="556">• event loop (несколько потоков Netty) нельзя блокировать: JDBC и другой блокирующий код — в Schedulers.boundedElastic()</text>
+    <text x="44" y="578">• publishOn меняет поток для операторов ниже по цепочке, subscribeOn — поток источника</text>
+  </g>
+</svg>

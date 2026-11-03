@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" font-family="Segoe UI, Inter, Arial, sans-serif">
+  <rect width="960" height="600" fill="#1c1f26"/>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#8a909c"/></marker>
+    <marker id="g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#1f9d6b"/></marker>
+    <marker id="o" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#d98a1c"/></marker>
+  </defs>
+  <text x="480" y="38" text-anchor="middle" font-size="24" font-weight="700" fill="#e3e5ea">Kafka: топик, партиции и группы потребителей</text>
+
+  <!-- продюсер -->
+  <rect x="24" y="190" width="150" height="110" rx="14" fill="#23272f" stroke="#6d7380" stroke-width="1.5"/>
+  <text x="99" y="222" text-anchor="middle" font-size="16" font-weight="700" fill="#e3e5ea">Producer</text>
+  <text x="99" y="246" text-anchor="middle" font-size="12.5" fill="#e3e5ea">партиция =</text>
+  <text x="99" y="264" text-anchor="middle" font-size="12.5" fill="#e3e5ea" font-family="Consolas, monospace">hash(key) % 4</text>
+  <text x="99" y="286" text-anchor="middle" font-size="12" fill="#9aa0ac">порядок по ключу</text>
+  <line x1="174" y1="245" x2="214" y2="245" stroke="#9aa0ac" stroke-width="2" marker-end="url(#a)"/>
+
+  <!-- топик -->
+  <rect x="218" y="70" width="352" height="372" rx="16" fill="#252c47" stroke="#4f6bed" stroke-width="1.5"/>
+  <text x="394" y="96" text-anchor="middle" font-size="16" font-weight="700" fill="#a9b8ff">Топик orders · 4 партиции</text>
+  <g font-size="12" font-family="Consolas, monospace" text-anchor="middle">
+    <text x="240" y="140" font-family="Segoe UI, Inter, Arial" font-size="14" font-weight="700" fill="#e3e5ea" text-anchor="start">P0</text>
+    <rect x="272" y="120" width="40" height="30" rx="5" fill="#1c1f26" stroke="#4a5ba8"/><text x="292" y="140">0</text>
+    <rect x="316" y="120" width="40" height="30" rx="5" fill="#1c1f26" stroke="#4a5ba8"/><text x="336" y="140">1</text>
+    <rect x="360" y="120" width="40" height="30" rx="5" fill="#1c1f26" stroke="#4a5ba8"/><text x="380" y="140">2</text>
+    <rect x="404" y="120" width="40" height="30" rx="5" fill="#1c1f26" stroke="#4a5ba8"/><text x="424" y="140">3</text>
+    <rect x="448" y="120" width="40" height="30" rx="5" fill="#1c1f26" stroke="#4a5ba8"/><text x="468" y="140">4</text>
+    <rect x="492" y="120" width="40" height="30" rx="5" fill="#4f6bed"/><text x="512" y="140" fill="#fff">5</text>
+
+    <text x="240" y="220" font-family="Segoe UI, Inter, Arial" font-size="14" font-weight="700" fill="#e3e5ea" text-anchor="start">P1</text>
+    <rect x="272" y="200" width="40" height="30" rx="5" fill="#1c1f26" stroke="#4a5ba8"/><text x="292" y="220">0</text>
+    <rect x="316" y="200" width="40" height="30" rx="5" fill="#1c1f26" stroke="#4a5ba8"/><text x="336" y="220">1</text>
+    <rect x="360" y="200" width="40" height="30" rx="5" fill="#1c1f26" stroke="#4a5ba8"/><text x="380" y="220">2</text>
+    <rect x="404" y="200" width="40" height="30" rx="5" fill="#4f6bed"/><text x="424" y="220" fill="#fff">3</text>
+
+    <text x="240" y="300" font-family="Segoe UI, Inter, Arial" font-size="14" font-weight="700" fill="#e3e5ea" text-anchor="start">P2</text>
+    <rect x="272" y="280" width="40" height="30" rx="5" fill="#1c1f26" stroke="#4a5ba8"/><text x="292" y="300">0</text>
+    <rect x="316" y="280" width="40" height="30" rx="5" fill="#1c1f26" stroke="#4a5ba8"/><text x="336" y="300">1</text>
+    <rect x="360" y="280" width="40" height="30" rx="5" fill="#1c1f26" stroke="#4a5ba8"/><text x="380" y="300">2</text>
+    <rect x="404" y="280" width="40" height="30" rx="5" fill="#1c1f26" stroke="#4a5ba8"/><text x="424" y="300">3</text>
+    <rect x="448" y="280" width="40" height="30" rx="5" fill="#4f6bed"/><text x="468" y="300" fill="#fff">4</text>
+
+    <text x="240" y="380" font-family="Segoe UI, Inter, Arial" font-size="14" font-weight="700" fill="#e3e5ea" text-anchor="start">P3</text>
+    <rect x="272" y="360" width="40" height="30" rx="5" fill="#1c1f26" stroke="#4a5ba8"/><text x="292" y="380">0</text>
+    <rect x="316" y="360" width="40" height="30" rx="5" fill="#1c1f26" stroke="#4a5ba8"/><text x="336" y="380">1</text>
+    <rect x="360" y="360" width="40" height="30" rx="5" fill="#4f6bed"/><text x="380" y="380" fill="#fff">2</text>
+  </g>
+  <text x="394" y="418" text-anchor="middle" font-size="12.5" fill="#e3e5ea">ячейка — сообщение, число — offset</text>
+  <text x="394" y="434" text-anchor="middle" font-size="12.5" fill="#9aa0ac">порядок гарантирован только внутри партиции</text>
+
+  <!-- группа A -->
+  <rect x="640" y="70" width="296" height="186" rx="16" fill="#17352a" stroke="#1f9d6b" stroke-width="1.5"/>
+  <text x="788" y="96" text-anchor="middle" font-size="15" font-weight="700" fill="#3ccf94">Группа billing · 2 потребителя</text>
+  <rect x="660" y="112" width="256" height="56" rx="10" fill="#1c1f26" stroke="#1f9d6b"/>
+  <text x="676" y="136" font-size="14" font-weight="700" fill="#e3e5ea">C1</text><text x="708" y="136" font-size="13" fill="#e3e5ea">читает P0 и P1</text>
+  <text x="676" y="156" font-size="12" fill="#9aa0ac">offset P0 = 4, P1 = 3</text>
+  <rect x="660" y="180" width="256" height="56" rx="10" fill="#1c1f26" stroke="#1f9d6b"/>
+  <text x="676" y="204" font-size="14" font-weight="700" fill="#e3e5ea">C2</text><text x="708" y="204" font-size="13" fill="#e3e5ea">читает P2 и P3</text>
+  <text x="676" y="224" font-size="12" fill="#9aa0ac">offset P2 = 4, P3 = 1</text>
+  <path d="M534 135 C 590 135, 610 140, 656 140" fill="none" stroke="#1f9d6b" stroke-width="2" marker-end="url(#g)"/>
+  <path d="M448 215 C 560 215, 600 145, 656 145" fill="none" stroke="#1f9d6b" stroke-width="2" marker-end="url(#g)"/>
+  <path d="M490 295 C 590 295, 600 208, 656 208" fill="none" stroke="#1f9d6b" stroke-width="2" marker-end="url(#g)"/>
+  <path d="M404 375 C 600 375, 610 214, 656 214" fill="none" stroke="#1f9d6b" stroke-width="2" marker-end="url(#g)"/>
+
+  <!-- группа B -->
+  <rect x="640" y="276" width="296" height="230" rx="16" fill="#3a2d16" stroke="#d98a1c" stroke-width="1.5"/>
+  <text x="788" y="302" text-anchor="middle" font-size="15" font-weight="700" fill="#f0b04a">Группа analytics · 5 потребителей</text>
+  <g font-size="13">
+    <rect x="660" y="316" width="122" height="36" rx="8" fill="#1c1f26" stroke="#d98a1c"/><text x="721" y="339" text-anchor="middle" fill="#e3e5ea">C1 ← P0</text>
+    <rect x="794" y="316" width="122" height="36" rx="8" fill="#1c1f26" stroke="#d98a1c"/><text x="855" y="339" text-anchor="middle" fill="#e3e5ea">C2 ← P1</text>
+    <rect x="660" y="362" width="122" height="36" rx="8" fill="#1c1f26" stroke="#d98a1c"/><text x="721" y="385" text-anchor="middle" fill="#e3e5ea">C3 ← P2</text>
+    <rect x="794" y="362" width="122" height="36" rx="8" fill="#1c1f26" stroke="#d98a1c"/><text x="855" y="385" text-anchor="middle" fill="#e3e5ea">C4 ← P3</text>
+    <rect x="660" y="408" width="256" height="36" rx="8" fill="#23272f" stroke="#3a3f4b" stroke-dasharray="5 4"/><text x="788" y="431" text-anchor="middle" fill="#9aa0ac">C5 — простаивает (партиций всего 4)</text>
+  </g>
+  <text x="660" y="470" font-size="12.5" fill="#e3e5ea">свои offsets: группы читают топик</text>
+  <text x="660" y="487" font-size="12.5" fill="#e3e5ea">независимо друг от друга</text>
+  <path d="M570 250 C 610 250, 620 330, 656 334" fill="none" stroke="#d98a1c" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#o)"/>
+
+  <rect x="24" y="524" width="912" height="62" rx="12" fill="#23272f"/>
+  <text x="44" y="549" font-size="13.5" fill="#e3e5ea"><tspan font-weight="700">Правило:</tspan> партиция читается не более чем одним потребителем группы — параллелизм ограничен числом партиций.</text>
+  <text x="44" y="571" font-size="13.5" fill="#e3e5ea">Сообщения не удаляются после чтения (хранятся по retention) — потребитель только коммитит свой offset.</text>
+</svg>
