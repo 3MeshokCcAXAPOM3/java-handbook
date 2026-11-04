@@ -86,6 +86,7 @@
 
   (window.APP_EXT = window.APP_EXT || []).push({
     id: 'sqllab', href: '#/sql', ico: '🗄', t: 'SQL', long: 'SQL-тренажёр', desc: `${DATA.tasks.length} задач: от SELECT до оконных функций, автопроверка`,
+    prog: S => ({ k: DATA.tasks.filter(t => (S.sqllab || {})[t.id]).length, n: DATA.tasks.length }),
     re: /^#\/sql(?:\/([\w-]+))?$/, page,
   });
 })();

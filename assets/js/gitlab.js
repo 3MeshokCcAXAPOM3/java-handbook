@@ -268,6 +268,7 @@ git revert ref, git tag имя [ref], git log, git status. Ссылки: имя 
 
   (window.APP_EXT = window.APP_EXT || []).push({
     id: 'gitlab', href: '#/gitlab', ico: '🌿', t: 'Git', long: 'Git-тренажёр', desc: `${LEVELS.length} уровней: ветки, merge, rebase, reset, cherry-pick`,
+    prog: S => ({ k: LEVELS.filter(l => (S.gitlab || {})[l.id]).length, n: LEVELS.length }),
     re: /^#\/gitlab(?:\/([\w-]+))?$/, page,
   });
   window.GITLAB_TEST = { Repo, run, signature, LEVELS, buildRepo };
