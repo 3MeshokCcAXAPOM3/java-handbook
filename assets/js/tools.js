@@ -119,7 +119,7 @@
     jwtMode = m === 'create' ? 'enc' : 'dec';
     api.main().innerHTML = `<div class="page wide tool-page"><div class="crumbs"><a href="#/">Главная</a> · Инструменты</div>
       <h1 class="title">🔑 JWT: разбор, проверка и создание</h1>
-      <p class="subtitle">Как jwt.io, только офлайн: токен и ключи не покидают ваш компьютер и не сохраняются. Теория — в теме «<a href="#/q/sec-x1">Безопасность → JWT подробно</a>».</p>
+      <p class="subtitle">Как jwt.io, только офлайн: токен и ключи не покидают ваш компьютер и не сохраняются. Теория — в теме «<a href="#/q/sec-x1">Безопасность приложений → JWT подробно</a>».</p>
       <div class="seg tool-seg"><a href="#/jwt" class="${jwtMode === 'dec' ? 'on' : ''}">Разобрать и проверить</a><a href="#/jwt/create" class="${jwtMode === 'enc' ? 'on' : ''}">Создать токен</a></div>
       <div id="jwtArea"></div></div>`;
     jwtMode === 'dec' ? renderDecode() : renderEncode();
@@ -162,6 +162,7 @@
       if (!key.trim()) { out.innerHTML = `<div class="jw-neutral">Подпись не проверена — введите ${al.fam === 'HS' ? 'секрет' : 'открытый ключ'}.</div>`; return; }
       try {
         const ok = await verify(al, cur.parts[0] + '.' + cur.parts[1], cur.sig, key, keyState.b64);
+        if (ok && !api.S().jwtOk) { api.S().jwtOk = true; api.save(); }
         out.innerHTML = ok ? '<div class="jw-ok">✓ Подпись верна</div>' : '<div class="jw-bad">✗ Подпись неверна: токен изменён или ключ не тот</div>';
       } catch (e) { out.innerHTML = `<div class="jw-bad">✗ ${esc(e.message)}</div>`; }
     };
@@ -489,16 +490,64 @@
     lines(); if (ta.value.trim()) check(true);
   }
 
+  // ======================= Хеши и Base64 =======================
+  const toHex = b => Array.from(b, x => x.toString(16).padStart(2, '0')).join('');
+  function fromHex(s) { s = s.replace(/\s+/g, ''); if (!/^([0-9a-fA-F]{2})*$/.test(s)) throw new Error('Некорректная hex-строка'); const u = new Uint8Array(s.length / 2); for (let i = 0; i < u.length; i++) u[i] = parseInt(s.substr(i * 2, 2), 16); return u; }
+  function b64ToBytes(s) { s = s.trim().replace(/\s+/g, ''); return b64uToBytes(s.replace(/\+/g, '-').replace(/\//g, '_')); }
+  const bytesToB64 = b => { let s = ''; for (let i = 0; i < b.length; i++) s += String.fromCharCode(b[i]); return btoa(s); };
+  async function digest(alg, bytes) {
+    if (subtle) return new Uint8Array(await subtle.digest(alg, bytes));
+    if (alg === 'SHA-256') return sha256(bytes);
+    throw new Error('недоступно без WebCrypto');
+  }
+  function pageHash() {
+    api.main().innerHTML = `<div class="page wide tool-page"><div class="crumbs"><a href="#/">Главная</a> · Инструменты</div>
+      <h1 class="title"># Хеши и Base64</h1>
+      <p class="subtitle">Кодирование (Base64, Hex, URL) и хеши (SHA-1, SHA-256, SHA-384, SHA-512, HMAC) — офлайн, данные не покидают компьютер. Помните: кодирование — не шифрование, а быстрые хеши не подходят для паролей. Теория — в теме «<a href="#/q/crypto-x1">Криптография</a>».</p>
+      <div class="tool-grid">
+        <div class="tool-col"><div class="tool-h"><b>Исходные данные</b><span class="sp"></span><select id="hsIn" class="tool-sel" data-hint="Как понимать введённые данные"><option value="text">Текст (UTF-8)</option><option value="hex">Hex</option><option value="b64">Base64</option></select></div>
+          <textarea id="hsText" class="tool-ta mono" spellcheck="false" placeholder="Введите текст…">Java</textarea>
+          <div class="tool-h" style="margin-top:12px"><b>Ключ HMAC</b><span class="muted">необязательно</span></div>
+          <input id="hsKey" class="tool-in mono" placeholder="Секретный ключ для HMAC-SHA256" autocomplete="off">
+          <div id="hsErr"></div>
+          <div class="tool-note"><b>Совет.</b> Измените одну букву — все хеши поменяются целиком (лавинный эффект). Одинаковый текст всегда даёт одинаковый хеш — поэтому пароли хешируют с солью и медленной функцией (bcrypt, Argon2), а не SHA-256.</div></div>
+        <div class="tool-col"><div class="tool-h"><b>Результат</b><span class="muted" id="hsLen"></span></div><div class="tbl"><table><tbody id="hsOut"></tbody></table></div></div>
+      </div></div>`;
+    const ta = api.$('#hsText'), key = api.$('#hsKey'), inSel = api.$('#hsIn');
+    const row = (k, v, warn) => `<tr><td class="hs-k">${esc(k)}${warn ? `<span class="hs-warn" data-hint="${esc(warn)}">⚠</span>` : ''}</td><td class="hs-v mono">${esc(v)}</td><td class="sup-c"><button class="chip" data-cp="${esc(v)}">Копировать</button></td></tr>`;
+    async function run() {
+      const err = api.$('#hsErr'); err.innerHTML = '';
+      let bytes;
+      try { bytes = inSel.value === 'hex' ? fromHex(ta.value) : inSel.value === 'b64' ? b64ToBytes(ta.value) : enc.encode(ta.value); }
+      catch (e) { err.innerHTML = `<div class="jw-bad">✗ ${esc(e.message === 'Недопустимые символы Base64URL' ? 'Некорректный Base64' : e.message)}</div>`; api.$('#hsOut').innerHTML = ''; return; }
+      let text = ''; try { text = new TextDecoder('utf-8', { fatal: true }).decode(bytes); } catch (e) { text = '(не текст UTF-8)'; }
+      const rows = [];
+      if (inSel.value !== 'text') rows.push(row('Как текст', text));
+      rows.push(row('Base64', bytesToB64(bytes)), row('Base64URL', bytesToB64u(bytes)), row('Hex', toHex(bytes)));
+      if (inSel.value === 'text') rows.push(row('URL-кодирование', encodeURIComponent(ta.value)));
+      for (const [n, a, w] of [['SHA-1', 'SHA-1', 'Сломан по коллизиям — не используйте для безопасности'], ['SHA-256', 'SHA-256'], ['SHA-384', 'SHA-384'], ['SHA-512', 'SHA-512']]) {
+        try { rows.push(row(n, toHex(await digest(a, bytes)), w)); } catch (e) { rows.push(row(n, e.message)); }
+      }
+      if (key.value) { try { rows.push(row('HMAC-SHA256', toHex(await hmacSign(ALG('HS256'), enc.encode(key.value), bytes)))); } catch (e) { rows.push(row('HMAC-SHA256', e.message)); } }
+      api.$('#hsOut').innerHTML = rows.join('');
+      api.$('#hsLen').textContent = `${bytes.length} байт`;
+      api.$$('[data-cp]', api.$('#hsOut')).forEach(b => b.onclick = () => copy(b.dataset.cp));
+    }
+    let t = 0; const later = () => { clearTimeout(t); t = setTimeout(run, 120); };
+    ta.oninput = later; key.oninput = later; inSel.onchange = run;
+    run();
+  }
+
   function page(a, m) {
     api = a;
     const kind = m[1];
-    if (kind === 'json') pageJson(); else pageJwt(m[2]);
+    if (kind === 'json') pageJson(); else if (kind === 'hash') pageHash(); else pageJwt(m[2]);
     document.querySelector('.main').scrollTop = 0;
   }
   // для тестов
   window.VIBE_TOOLS = { parseStrict, repair, serialize, parseJwt, sign, verify, ALG, sha256, hmac256, bytesToB64u, strToB64u };
   (window.APP_EXT = window.APP_EXT || []).push({
-    id: 'tools', href: '#/jwt', ico: '🧰', t: 'JWT, JSON', long: 'Инструменты: JWT и JSON', desc: 'разбор и создание JWT, проверка и форматирование JSON', trainer: false,
-    re: /^#\/(jwt|json)(?:\/(create))?$/, page,
+    id: 'tools', href: '#/jwt', ico: '🧰', t: 'JWT, JSON', long: 'Инструменты: JWT и JSON', desc: 'разбор и создание JWT, проверка и форматирование JSON, хеши и Base64', trainer: false,
+    re: /^#\/(jwt|json|hash)(?:\/(create))?$/, page,
   });
 })();

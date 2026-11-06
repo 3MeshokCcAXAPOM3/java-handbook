@@ -41,13 +41,15 @@
     if (S.st[o]) { if (!S.st[n]) S.st[n] = S.st[o]; delete S.st[o]; }
     if (S.notes[o]) { S.notes[n] = (S.notes[n] ? S.notes[n] + '\n\n' : '') + S.notes[o]; delete S.notes[o]; }
   });
-  const learnSig = () => JSON.stringify([S.st, S.qz, S.gl, S.gitlab, S.sqllab, S.tk, S.hist.length, S.road, S.code]);
+  const learnSig = () => JSON.stringify([S.st, S.qz, S.gl, S.gitlab, S.sqllab, S.tk, S.hist.length, S.road, S.code, !!S.jwtOk, Object.keys(S.notes).length]);
   let lastSig = null;
   function trackActivity() {
     const sig = learnSig(); if (lastSig !== null && sig !== lastSig) {
       S.days = S.days || {}; const k = todayKey(); S.days[k] = (S.days[k] || 0) + 1;
       const ks = Object.keys(S.days).sort(); if (ks.length > 400) ks.slice(0, ks.length - 400).forEach(x => delete S.days[x]);
       S.bestStreak = Math.max(S.bestStreak || 0, streak());
+      const hr = new Date().getHours(); if (hr < 5) S.owl = 1; else if (hr >= 5 && hr < 7) S.lark = 1;
+      if (typeof checkAchievements === 'function') checkAchievements();
     }
     lastSig = sig;
   }
@@ -80,7 +82,7 @@
   function renderNav() {
     const cur = location.hash || '#/';
     const mod = currentModule(cur);
-    $('#sideLinks').innerHTML = `<div class="mod-grid">${MODULES.map(m => `<a class="mod${mod === m.id ? ' active' : ''}" href="${m.href}" data-hint="${esc(HINTS[m.id] || m.long || m.t)}" aria-label="${esc(m.long || m.t)}"><span class="mi">${m.ico}</span><span class="mt">${esc(m.t)}</span></a>`).join('')}</div>
+    $('#sideLinks').innerHTML = `<div class="mod-grid"><button class="mod mini-only" id="miniTopics" data-hint="Темы: открыть список тем" aria-label="Темы"><span class="mi">📚</span><span class="mt">Темы</span></button>${MODULES.map(m => `<a class="mod${mod === m.id ? ' active' : ''}" href="${m.href}" data-hint="${esc(HINTS[m.id] || m.long || m.t)}" aria-label="${esc(m.long || m.t)}"><span class="mi">${m.ico}</span><span class="mt">${esc(m.t)}</span></a>`).join('')}</div>
       <div class="nav-filter"><input id="navQ" placeholder="Найти тему…" value="${esc(navFilter)}" autocomplete="off"></div>`;
     const curSlug = (cur.match(/^#\/t\/([^/]+)(?:\/do)?$/) || [])[1];
     const qm = cur.match(/^#\/(?:q|solve)\/(.+)$/);
@@ -98,6 +100,7 @@
           return `<a class="nav-item${curTopic === t ? ' active' : ''}" href="#/t/${t.slug}"><div class="nav-row"><span class="nav-name">${esc(t.title)}</span><span class="nav-cnt">${s.k}/${t.count}</span></div>${barHTML(s, 'mini-bar')}</a>`;
         }).join('') + '</div></div>';
     }).join('') || '<div class="muted" style="padding:8px 12px">Тема не найдена</div>';
+    $('#miniTopics').onclick = e => { e.stopPropagation(); document.body.classList.toggle('mini-open'); if (document.body.classList.contains('mini-open')) $('#navQ').focus(); };
     $('#navQ').oninput = e => { navFilter = e.target.value; const pos = e.target.selectionStart; renderNav(); const n = $('#navQ'); n.focus(); n.setSelectionRange(pos, pos); };
   }
   document.addEventListener('click', e => {
@@ -258,6 +261,7 @@
     const open = force !== undefined ? force : !card.classList.contains('open');
     if (open && !card.dataset.filled) { fillCard(card); card.dataset.filled = 1; }
     card.classList.toggle('open', open);
+    clearTimeout(navSaveT); navSaveT = setTimeout(navSave, 60);
   }
   function refreshStatus(id) {
     $$(`.card[data-id="${id}"]`).forEach(card => {
@@ -319,6 +323,16 @@
     const glk = Object.values(S.gl || {}).filter(v => v === 'k').length;
     const exams = S.hist.filter(h => h.m === 'exam' && h.pass).length, tks = Object.values(S.tk).filter(r => r.pass).length;
     const sk = Math.max(streak(), S.bestStreak || 0);
+    const grp = name => stats(D.topics.filter(t => t.group === name && !t.module).flatMap(topicQs));
+    const kt = grp('Kotlin'), spr = grp('Spring'), dat = grp('Данные'), arc = grp('Архитектура'), sec = grp('Безопасность');
+    const roadOk = key => { const r = (D.road || []).find(x => x.key === key); if (!r) return [0, 0]; const its = r.blocks.flatMap(b => b.items); return [its.filter(it => roadDone(r.key, it)).length, its.length]; };
+    const rj = roadOk('j'), rm = roadOk('m'), rs = roadOk('s');
+    const leet = TOPIC.live ? topicQs(TOPIC.live).filter(q => st(q.id) === 'k').length : 0;
+    const ref = TOPIC.refactor ? stats(topicQs(TOPIC.refactor)) : { k: 0, n: 1 };
+    const ex = S.hist.filter(h => h.m === 'exam'); const perfect = ex.some(h => h.ok === h.n && h.n >= 10);
+    const last5 = ex.slice(-5); const run5 = last5.length === 5 && last5.every(h => h.pass);
+    const notes = Object.keys(S.notes).filter(k => S.notes[k]).length, qz = Object.keys(S.qz || {}).length;
+    const pair = (a) => `${a.k}/${a.n}`;
     return [
       ['👣', 'Первый шаг', 'Отметьте первый вопрос «✓ Знаю»', all.k >= 1, `${Math.min(all.k, 1)}/1`],
       ['💯', 'Сотня', '100 изученных вопросов', all.k >= 100, `${Math.min(all.k, 100)}/100`],
@@ -330,8 +344,86 @@
       ['🗄', 'Мастер SQL', 'Решите все задачи SQL-тренажёра', s && s.k === s.n, s ? `${s.k}/${s.n}` : ''],
       ['📘', 'Словарный запас', '100 терминов глоссария отмечены «знаю»', glk >= 100, `${Math.min(glk, 100)}/100`],
       ['🔥', 'Неделя подряд', 'Занимайтесь 7 дней подряд', sk >= 7, `${Math.min(sk, 7)}/7`],
+      ['📅', 'Месяц подряд', 'Занимайтесь 30 дней подряд', sk >= 30, `${Math.min(sk, 30)}/30`],
+      ['💎', 'Сто дней', 'Занимайтесь 100 дней подряд', sk >= 100, `${Math.min(sk, 100)}/100`],
+      ['🚀', 'Пятьсот', '500 изученных вопросов', all.k >= 500, `${Math.min(all.k, 500)}/500`],
+      ['🏁', 'Всё изучено', 'Отмечены «знаю» все вопросы', all.k === all.n, `${all.k}/${all.n}`],
+      ['🟣', 'Kotlin', 'Изучены все темы группы Kotlin', kt.n && kt.k === kt.n, pair(kt)],
+      ['🌱', 'Spring', 'Изучены все темы группы Spring', spr.n && spr.k === spr.n, pair(spr)],
+      ['🗃', 'Данные', 'Изучены все темы группы «Данные»', dat.n && dat.k === dat.n, pair(dat)],
+      ['🏛', 'Архитектор', 'Изучены все темы группы «Архитектура»', arc.n && arc.k === arc.n, pair(arc)],
+      ['🔐', 'Безопасник', 'Изучены все темы группы «Безопасность»', sec.n && sec.k === sec.n, pair(sec)],
+      ['🧭', 'Junior пройден', 'Закрыты все пункты дорожной карты Junior', rj[1] && rj[0] === rj[1], `${rj[0]}/${rj[1]}`],
+      ['🧗', 'Middle пройден', 'Закрыты все пункты дорожной карты Middle', rm[1] && rm[0] === rm[1], `${rm[0]}/${rm[1]}`],
+      ['🦅', 'Senior пройден', 'Закрыты все пункты дорожной карты Senior', rs[1] && rs[0] === rs[1], `${rs[0]}/${rs[1]}`],
+      ['💻', 'Решатель', '10 задач LeetCode отмечены решёнными', leet >= 10, `${Math.min(leet, 10)}/10`],
+      ['🛠', 'Рефакторинг', 'Все задачи практикума рефакторинга решены', ref.k === ref.n, `${ref.k}/${ref.n}`],
+      ['🎯', 'Без единой ошибки', 'Сдайте экзамен (от 10 вопросов) без ошибок', perfect, perfect ? '✓' : ''],
+      ['🔁', 'Пять из пяти', 'Сдайте пять экзаменов подряд', run5, `${last5.filter(h => h.pass).length}/5`],
+      ['🧪', 'Сто ответов', 'Ответьте на 100 вопросов самотеста', qz >= 100, `${Math.min(qz, 100)}/100`],
+      ['📝', 'Конспект', '50 личных заметок к вопросам', notes >= 50, `${Math.min(notes, 50)}/50`],
+      ['🦉', 'Ночная сова', 'Позанимайтесь после полуночи', !!S.owl, ''],
+      ['🐦', 'Ранняя пташка', 'Позанимайтесь с 5 до 7 утра', !!S.lark, ''],
+      ['🔑', 'Взломщик подписей', 'Проверьте подпись JWT в инструментах', !!S.jwtOk, ''],
     ];
   }
+  // ---------- достижения: уведомление о новых ----------
+  let achT = 0;
+  function checkAchievements() {
+    clearTimeout(achT);
+    achT = setTimeout(() => {
+      const got = achievements().filter(a => a[3]).map(a => a[1]);
+      if (!Array.isArray(S.achGot)) { S.achGot = got; save(); return; }     // первый расчёт — без поздравлений
+      const fresh = got.filter(t => !S.achGot.includes(t)); if (!fresh.length) return;
+      S.achGot = got; save();
+      fresh.forEach((t, i) => setTimeout(() => { const a = achievements().find(x => x[1] === t); toast(`🏆 Новое достижение: ${a ? a[0] + ' ' : ''}${t}`); }, i * 2200));
+    }, 500);
+  }
+
+  // ---------- экскурсия для нового пользователя ----------
+  const TOUR = [
+    ['.mod-grid', 'Модули', 'Тренажёры, тесты, тренировка, глоссарий, прогресс и инструменты. Наведите на иконку — появится подсказка, что она делает.'],
+    ['.nav', 'Темы', 'Все темы по группам: от Java Core и Kotlin до архитектуры и практики. Кнопка « у края сворачивает меню до иконок.'],
+    ['#bottomBar', 'Быстрые переходы', 'Главная, темы, LeetCode, тесты и прогресс — всегда под рукой.'],
+    ['#menuBtn', 'Меню', 'Здесь все модули и темы.'],
+    ['#lvSeg', 'Уровень ответа', 'Junior — основа, Middle — детали и практика, Senior — устройство и компромиссы, «Подробно» — развёрнутая статья.'],
+    ['.search', 'Поиск', 'Ищет по вопросам и ответам. Клавиша / или Ctrl+K.'],
+    ['#themeBtn', 'Оформление', 'Светлая или тёмная тема и пять стилей.'],
+    ['.home-head a[href="#/about"]', 'О приложении', 'Что умеет VibeOFF, как заниматься каждый день, обратная связь. Загляните сюда первым делом!'],
+  ];
+  let tourEls = null;
+  function tourVisible(el) { if (!el) return false; const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0 && r.right > 0 && r.left < innerWidth && getComputedStyle(el).visibility !== 'hidden'; }
+  function endTour() { if (tourEls) { tourEls.hole.remove(); tourEls.card.remove(); tourEls = null; } S.tourDone = true; save(); window.removeEventListener('resize', tourPlace); }
+  function tourPlace() {
+    if (!tourEls) return;
+    const { steps, i, hole, card } = tourEls; const el = $(steps[i][0]); if (!el) return endTour();
+    const r = el.getBoundingClientRect(), pad = 6;
+    Object.assign(hole.style, { left: r.left - pad + 'px', top: r.top - pad + 'px', width: r.width + pad * 2 + 'px', height: Math.min(r.height, innerHeight - 20) + pad * 2 + 'px' });
+    const cw = card.offsetWidth, ch = card.offsetHeight;
+    let x = r.right + 16, y = r.top;
+    if (x + cw > innerWidth - 10) { x = Math.min(Math.max(10, r.left), innerWidth - cw - 10); y = r.bottom + 14; if (y + ch > innerHeight - 10) y = r.top - ch - 14; }
+    card.style.left = Math.max(10, x) + 'px'; card.style.top = Math.max(10, Math.min(y, innerHeight - ch - 10)) + 'px';
+  }
+  function startTour() {
+    if (tourEls) return;
+    const steps = TOUR.filter(s => tourVisible($(s[0]))); if (!steps.length) return;
+    const hole = document.createElement('div'); hole.className = 'tour-hole';
+    const card = document.createElement('div'); card.className = 'tour-card'; card.setAttribute('role', 'dialog');
+    document.body.append(hole, card);
+    tourEls = { steps, i: 0, hole, card };
+    const show = () => {
+      const { i } = tourEls; const [, t, d] = steps[i];
+      card.innerHTML = `<div class="tour-n">${i + 1} из ${steps.length}</div><b>${esc(t)}</b><p>${esc(d)}</p><div class="tour-act"><button class="chip" id="tourSkip">Пропустить</button><span class="sp"></span>${i ? '<button class="chip" id="tourPrev">Назад</button>' : ''}<button class="btn" id="tourNext">${i === steps.length - 1 ? 'Готово' : 'Далее'}</button></div>`;
+      $('#tourSkip').onclick = endTour;
+      if ($('#tourPrev')) $('#tourPrev').onclick = () => { tourEls.i--; show(); };
+      $('#tourNext').onclick = () => { if (tourEls.i === steps.length - 1) endTour(); else { tourEls.i++; show(); } };
+      tourPlace(); $('#tourNext').focus({ preventScroll: true });
+    };
+    window.addEventListener('resize', tourPlace);
+    show();
+  }
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && tourEls) endTour(); });
+
   function hblock(id, title, body, extra) {
     const fold = !!(S.homeFold || {})[id];
     return `<section class="hblock${fold ? ' folded' : ''}" data-hb="${id}"><div class="hb-h"><h2>${title}</h2>${extra || ''}<button class="hb-fold" data-hint="${fold ? 'Развернуть блок' : 'Свернуть блок'}" aria-label="Свернуть или развернуть">▾</button></div><div class="hb-body">${body}</div></section>`;
@@ -343,7 +435,7 @@
     const nx = nextRoadItem(); const nxQ = nx ? Q[nx.it.ids.find(id => st(id) !== 'k') || nx.it.ids[0]] : null;
     const sk = streak(); const heat = heatHTML(); const weak = weakTopics();
     const head = `<div class="home-head"><div><h1>VibeOFF <span class="slogan">· Выруби автопилот. Вруби мозги</span></h1><p>${fresh ? 'Тренажёр и учебник Java-разработчика: от основ языка до архитектуры. Чтобы навыки не зависели от автодополнения.' : `Изучено ${all.k} из ${all.n} · на повторении ${all.r}${sk ? ` · 🔥 ${plural(sk, 'день', 'дня', 'дней')} подряд` : ''}`}</p></div>
-      <div class="home-head-r"><a class="hh-btn" href="#/about" data-hint="Что умеет приложение, как им пользоваться, автор и обратная связь">ℹ️ О приложении</a></div></div>`;
+      <div class="home-head-r">${META.download && location.protocol.startsWith('http') ? `<a class="hh-btn" href="${esc(META.download)}" data-hint="Скачать приложение на компьютер: распакуйте архив и откройте index.html — работает без интернета">⬇ Скачать</a>` : ''}<a class="hh-btn${S.aboutSeen ? '' : ' pulse'}" href="#/about" data-hint="Что умеет приложение, как им пользоваться, автор и обратная связь">ℹ️ О приложении</a></div></div>`;
     const news = !fresh && META.version && S.seenVersion !== META.version && (META.changelog || [])[0]
       ? `<div class="home-news"><span>✨ Новое в v${esc(META.version)}: <b>${esc(META.changelog[0].title)}</b></span><a href="javascript:void 0" data-changes>Подробнее</a></div>` : '';
     const lvBtns = ['j', 'm', 's'].map(k => `<button class="chip${S.level === k ? ' on' : ''}" data-setlv="${k}">${LV[k]}</button>`).join('');
@@ -388,7 +480,9 @@
     const openG = (S.homeGroups || {});
     const topicsHTML = (started.length ? `<div class="cont-list">${started.map(r => `<a class="cont" href="#/t/${r.t.slug}"><span class="tt">${esc(r.t.title)}</span>${barHTML(r.s, 'mini-bar')}<span class="m">${r.s.k}/${r.s.n}</span></a>`).join('')}</div>` : '') +
       `<div class="glist">${D.groups.map(g => { const ts = D.topics.filter(t => t.group === g && !t.module); const gs = stats(ts.flatMap(topicQs)); return `<div class="gl-row2${openG[g] ? ' open' : ''}" data-g="${esc(g)}"><button class="gl-h2"><span class="chev">▶</span><b>${esc(g)}</b><span class="gl-bar">${barHTML(gs, 'mini-bar')}</span><span class="muted">${gs.k}/${gs.n}</span></button><div class="gb-topics">${ts.map(t => { const s = stats(topicQs(t)); return `<a href="#/t/${t.slug}" class="gb-t${s.k === s.n && s.n ? ' done' : ''}">${esc(t.title)}<span>${s.k}/${s.n}</span></a>`; }).join('')}</div></div>`; }).join('')}</div>`;
+    const qt = quoteOfDay();
     main().innerHTML = `<div class="page wide home">${head}${news}
+      ${qt ? `<div class="quote"><span class="q-mark">“</span><div><div class="q-text">${esc(qt[0])}</div><div class="q-auth">— ${esc(qt[1])}</div></div><button class="chip" id="qtNext" data-hint="Другая цитата">↻</button></div>` : ''}
       ${hblock('today', fresh ? 'С чего начать' : 'Сегодня', today)}
       ${hblock('daily', 'На каждый день', daily)}
       ${fresh ? '' : hblock('prog', 'Прогресс', progress)}
@@ -398,6 +492,8 @@
     </div>`;
     $('#qodNext').onclick = () => { S.qod.skip++; save(); const sc = $('.main').scrollTop; pageHome(); $('.main').scrollTop = sc; };
     const hm = $('.heat'); if (hm) hm.scrollLeft = hm.scrollWidth;
+    if ($('#qtNext')) $('#qtNext').onclick = () => { S.qtSkip = (S.qtSkip || 0) + 1; save(); const qq = quoteOfDay(); $('.q-text').textContent = qq[0]; $('.q-auth').textContent = '— ' + qq[1]; };
+    if (fresh && !S.tourDone) setTimeout(() => { if (location.hash === '' || location.hash === '#/') startTour(); }, 900);
     $$('[data-setlv]').forEach(b => b.onclick = () => { setLevel(b.dataset.setlv); $$('[data-setlv]').forEach(x => x.classList.toggle('on', x === b)); });
     $$('.hb-fold').forEach(b => b.onclick = () => { const s = b.closest('.hblock'); s.classList.toggle('folded'); S.homeFold = S.homeFold || {}; S.homeFold[s.dataset.hb] = s.classList.contains('folded'); b.dataset.hint = S.homeFold[s.dataset.hb] ? 'Развернуть блок' : 'Свернуть блок'; save(); });
     $$('.gl-h2').forEach(b => b.onclick = () => { const r = b.parentElement; r.classList.toggle('open'); S.homeGroups = S.homeGroups || {}; S.homeGroups[r.dataset.g] = r.classList.contains('open'); save(); });
@@ -406,6 +502,7 @@
   // ---------- о приложении ----------
   function pageAbout() {
     const email = META.email || '';
+    if (!S.aboutSeen) { S.aboutSeen = true; save(); }
     const F = [
       ['📚', 'Темы и уровни ответов', `${D.topics.filter(t => !t.module).length} тем и ${ORDER.length} вопросов. У каждого вопроса — ответы Junior, Middle, Senior и статья «Подробно»; уровень переключается вверху страницы или клавишами 1–5.`, '#/t/core1'],
       ['✅', 'Правильно и неправильно', 'Типичные ошибки в коде рядом с исправленным вариантом. Наведите на отмеченную строку — появится пояснение.', '#/dodont'],
@@ -417,7 +514,7 @@
       ['💻', 'LeetCode и лайфкодинг', 'Задачи с режимом «Решить самому»: редактор кода, подсказки по шагам, разбор и решение.', '#/leetcode'],
       ['🛠', 'Практикум рефакторинга', 'Плохой код открывается в редакторе — найдите и исправьте проблемы, затем сверьтесь с разбором.', '#/refactor'],
       ['🌿', 'Git-тренажёр', 'Вводите команды git — граф коммитов перестраивается сразу. Уровни и песочница.', '#/gitlab'],
-      ['🧰', 'Инструменты: JWT и JSON', 'Разбор и проверка подписи JWT, создание токенов, проверка JSON с понятными ошибками, форматирование, исправление и дерево с путями.', '#/jwt'],
+      ['🧰', 'Инструменты: JWT, JSON, хеши', 'Разбор и проверка подписи JWT, создание токенов; проверка JSON с понятными ошибками, форматирование и дерево с путями; Base64, Hex, SHA-256 и HMAC.', '#/jwt'],
       ['🗄', 'SQL-тренажёр', 'Настоящая база SQLite прямо в браузере, задачи с автопроверкой.', '#/sql'],
       ['💡', 'IntelliJ IDEA', 'Горячие клавиши (Windows/Linux и macOS), приёмы, отладка, шаблоны и тренажёр сочетаний.', '#/idea'],
       ['📝', 'Заметки и блокнот кода', 'Личная заметка к любому вопросу и блокнот с подсветкой Java — всё сохраняется автоматически.', '#/notes'],
@@ -433,8 +530,11 @@
         <p class="muted">Работает без интернета и без установки. Прогресс, заметки и результаты сохраняются в браузере автоматически, отдельно для каждого профиля.</p></div>
       <div class="sec-title">Что можно делать</div>
       <div class="feat-grid">${F.map(([i, t, d, h]) => `${h ? `<a class="feat" href="${h}"` : '<div class="feat"'}><span class="fi">${i}</span><b>${esc(t)}</b><span>${esc(d)}</span>${h ? '</a>' : '</div>'}`).join('')}</div>
+      ${META.download ? `<div class="sec-title">Работа без интернета</div><div class="panel offline-box">${location.protocol.startsWith('http')
+        ? `<p>Скачайте приложение на компьютер: распакуйте архив и откройте файл <b>index.html</b>. Всё будет работать без интернета; прогресс в скачанной копии хранится отдельно от сайта.</p><a class="btn" href="${esc(META.download)}" data-hint="Скачать архив приложения (zip)">⬇ Скачать VibeOFF</a>`
+        : `<p>Это скачанная копия — она работает без интернета. Когда интернет есть, приложение само проверяет, не вышла ли новая версия.${META.site ? ` Онлайн-версия: <a href="${esc(META.site)}" target="_blank" rel="noopener">${esc(META.site)}</a>` : ''}</p><a class="btn" href="${esc(META.download)}">⬇ Скачать последнюю версию</a>`}</div>` : ''}
       <div class="sec-title">Как заниматься</div>
-      <div class="panel"><ol class="routine">${routine.map(r => `<li>${esc(r)}</li>`).join('')}</ol>
+      <div class="panel"><div class="tour-again"><button class="chip" id="tourAgain" data-hint="Короткая экскурсия по интерфейсу на главной странице">▶ Показать экскурсию по интерфейсу</button></div><ol class="routine">${routine.map(r => `<li>${esc(r)}</li>`).join('')}</ol>
         <p class="muted" style="margin:8px 0 0">Подсказка: наведите на любую иконку или кнопку — появится описание того, что она делает.</p></div>
       <div class="sec-title">Клавиши</div>
       <div class="tbl"><table><tbody>
@@ -452,8 +552,11 @@
         <div class="au-mail">✉ Обратная связь: <a href="mailto:${esc(email)}">${esc(email)}</a> <button class="chip" id="auCopy" data-hint="Скопировать адрес в буфер обмена">Скопировать адрес</button></div>
         <h3>Пожелания по обучению</h3>
         <p>Чего не хватает: темы, вопроса, тренажёра, примера? Нашли ошибку? Напишите — учту в следующих версиях.</p>
+        <input id="auFrom" class="au-in" type="email" placeholder="Ваша почта для ответа (необязательно)" value="${esc(S.fbEmail || '')}" autocomplete="email">
         <textarea id="auWish" placeholder="Например: добавить тему про …, в вопросе «…» неточность, хочется тренажёр по …">${esc(S.wish || '')}</textarea>
-        <div class="au-act"><button class="btn" id="auSend" data-hint="Откроется почтовая программа с готовым письмом">✉ Отправить письмом</button><span class="muted">Приложение само ничего не отправляет: откроется ваша почтовая программа с готовым письмом.</span></div>
+        <input id="auHoney" class="au-honey" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <div class="au-act"><button class="btn" id="auSend" data-hint="Отправить сообщение автору">✉ Отправить</button><span class="muted" id="auNote">${META.feedback ? 'Сообщение уйдёт автору через сервис FormSubmit. Без интернета откроется почтовая программа.' : 'Откроется почтовая программа с готовым письмом.'}</span></div>
+        <div id="auRes"></div>
         <blockquote class="au-quote">«Зорко одно лишь сердце. Самого главного глазами не увидишь.»<cite>— Антуан де Сент-Экзюпери, «Маленький принц»</cite></blockquote>
       </div>
       ${(META.support || []).length ? `<div class="sec-title" id="support">Поддержать автора</div>
@@ -467,9 +570,38 @@
     const cp = (t, msg) => navigator.clipboard ? navigator.clipboard.writeText(t).then(() => toast(msg), () => fallbackCopy(t)) : fallbackCopy(t);
     $$('[data-sup]').forEach(b => b.onclick = () => { const [k, v] = META.support[+b.dataset.sup]; cp(v, k + ' — скопировано'); });
     if ($('#supAll')) $('#supAll').onclick = () => cp(META.support.map(([k, v]) => k + ': ' + v).join('\n'), 'Реквизиты скопированы');
-    $('#auSend').onclick = () => {
-      const body = ($('#auWish').value.trim() || '') + `\n\n—\n${META.title || ''} v${META.version || ''}`;
-      location.href = `mailto:${email}?subject=${encodeURIComponent('VibeOFF: пожелание')}&body=${encodeURIComponent(body)}`;
+    $('#tourAgain').onclick = () => { S.tourDone = false; location.hash = '#/'; setTimeout(startTour, 500); };
+    $('#auFrom').oninput = e => { S.fbEmail = e.target.value.trim(); save(); };
+    const mailBody = () => $('#auWish').value.trim() + `\n\n—\n${META.title || ''} v${META.version || ''}` + (S.fbEmail ? `\nОтвет: ${S.fbEmail}` : '');
+    const mailto = () => { location.href = `mailto:${email}?subject=${encodeURIComponent('VibeOFF: пожелание')}&body=${encodeURIComponent(mailBody())}`; };
+    const fallback = why => {
+      $('#auRes').innerHTML = `<div class="au-res warn">${esc(why)} Отправьте письмом:<div class="au-act"><button class="chip" id="auMail">✉ Открыть почтовую программу</button><button class="chip" id="auCopyAll">Скопировать адрес и текст</button></div></div>`;
+      $('#auMail').onclick = mailto; $('#auCopyAll').onclick = () => cp(email + '\n\n' + mailBody(), 'Адрес и текст скопированы');
+    };
+    $('#auSend').onclick = async () => {
+      const text = $('#auWish').value.trim(), from = $('#auFrom').value.trim();
+      if (!text) { toast('Напишите сообщение'); $('#auWish').focus(); return; }
+      if (from && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(from)) { toast('Проверьте адрес почты для ответа'); $('#auFrom').focus(); return; }
+      if ($('#auHoney').value) return;
+      if (!META.feedback) { mailto(); return; }
+      if (!navigator.onLine) { fallback('Нет подключения к интернету.'); return; }
+      const btn = $('#auSend'); btn.disabled = true; btn.textContent = 'Отправляю…'; $('#auRes').innerHTML = '';
+      const data = { name: from || 'Пользователь VibeOFF', message: text, _subject: 'VibeOFF: пожелание', _template: 'table', _captcha: 'false', version: META.version || '', page: location.protocol.startsWith('http') ? 'сайт' : 'скачанная копия' };
+      if (from) { data.email = from; data._replyto = from; }
+      try {
+        let ok;
+        if (/\/ajax\//.test(META.feedback)) {
+          const r = await fetch(META.feedback, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(data) });
+          const j = await r.json().catch(() => ({}));
+          ok = r.ok && String(j.success) === 'true';
+          if (!ok && /activat/i.test(j.message || '')) { fallback('Форма обратной связи ещё не активирована автором.'); return; }
+        } else {
+          await fetch(META.feedback, { method: 'POST', mode: 'no-cors', body: new URLSearchParams(data) }); ok = true;
+        }
+        if (ok) { $('#auRes').innerHTML = `<div class="au-res ok">✓ Спасибо! Сообщение отправлено${from ? ', ответ придёт на ' + esc(from) : ''}.</div>`; $('#auWish').value = ''; S.wish = ''; save(); }
+        else fallback('Сервис не принял сообщение.');
+      } catch (e) { fallback('Не удалось связаться с сервисом отправки.'); }
+      finally { btn.disabled = false; btn.textContent = '✉ Отправить'; }
     };
     $('.main').scrollTop = 0;
   }
@@ -488,7 +620,7 @@
     gloss: 'Глоссарий: термины и аннотации, сравнения «X против Y», примеры «правильно и неправильно»',
     prog: 'Прогресс: статистика, вопросы на повторение, заметки, ключевые вопросы',
     about: 'О приложении: возможности, как заниматься, автор и обратная связь',
-    tools: 'Инструменты: разбор, проверка и создание JWT; проверка, форматирование и исправление JSON — офлайн',
+    tools: 'Инструменты: JWT (разбор, проверка, создание), JSON (проверка, форматирование, исправление), хеши и Base64 — офлайн',
     dodont: 'Правильно и неправильно: типичные ошибки в коде и исправленные варианты',
   };
   const LV_HINT = { j: 'Junior: коротко и по сути — основа, которую нужно знать', m: 'Middle: детали, подводные камни и практика', s: 'Senior: внутреннее устройство, компромиссы, архитектура', a: 'Все уровни сразу: Junior + Middle + Senior', d: 'Подробно: развёрнутая статья с таблицами и примерами' };
@@ -669,22 +801,48 @@
 
   // ---------- тренировка ----------
   let T = null;
+  // выбор нескольких тем: список с галочками по группам
+  function topicPickerHTML(id, sel, counter) {
+    const groups = D.groups.map(g => [g, D.topics.filter(t => t.group === g && !t.module && counter(t))]).filter(([, ts]) => ts.length);
+    const all = groups.flatMap(([, ts]) => ts);
+    const label = !sel.size ? 'Все темы' : sel.size === 1 ? TOPIC[[...sel][0]].title : `${plural(sel.size, 'тема', 'темы', 'тем')} из ${all.length}`;
+    return `<div class="tpick" id="${id}"><button type="button" class="tpick-btn"><span>${esc(label)}</span><span class="chev">▾</span></button>
+      <div class="tpick-pop"><div class="tpick-acts"><button type="button" class="chip" data-tp="all">Выбрать все</button><button type="button" class="chip" data-tp="none">Снять все</button><span class="muted">${sel.size ? 'выбрано ' + sel.size : 'не выбрано — значит все'}</span></div>
+      ${groups.map(([g, ts]) => { const on = ts.filter(t => sel.has(t.slug)).length; return `<div class="tpick-g"><label class="tpick-gh"><input type="checkbox" data-tg="${esc(g)}"${on === ts.length ? ' checked' : ''}${on && on < ts.length ? ' data-part="1"' : ''}> <b>${esc(g)}</b></label>
+        <div class="tpick-ts">${ts.map(t => `<label><input type="checkbox" data-ts="${t.slug}"${sel.has(t.slug) ? ' checked' : ''}> ${esc(t.title)} <span class="muted">${counter(t)}</span></label>`).join('')}</div></div>`; }).join('')}
+      </div></div>`;
+  }
+  function mountTopicPicker(id, sel, counter, onChange) {
+    const root = $('#' + id); if (!root) return;
+    const redraw = () => { const open = root.classList.contains('open'); const sc = $('.tpick-pop', root).scrollTop; root.outerHTML = topicPickerHTML(id, sel, counter); mountTopicPicker(id, sel, counter, onChange); const r = $('#' + id); if (open) r.classList.add('open'); $('.tpick-pop', r).scrollTop = sc; onChange(); };
+    $$('[data-part]', root).forEach(x => x.indeterminate = true);
+    $('.tpick-btn', root).onclick = e => { e.stopPropagation(); root.classList.toggle('open'); };
+    $('.tpick-pop', root).onclick = e => e.stopPropagation();
+    $$('[data-ts]', root).forEach(c => c.onchange = () => { c.checked ? sel.add(c.dataset.ts) : sel.delete(c.dataset.ts); redraw(); });
+    $$('[data-tg]', root).forEach(c => c.onchange = () => { D.topics.filter(t => t.group === c.dataset.tg && !t.module && counter(t)).forEach(t => c.checked ? sel.add(t.slug) : sel.delete(t.slug)); redraw(); });
+    $$('[data-tp]', root).forEach(b => b.onclick = () => { if (b.dataset.tp === 'all') D.topics.filter(t => !t.module && counter(t)).forEach(t => sel.add(t.slug)); else sel.clear(); redraw(); });
+  }
+  document.addEventListener('click', () => $$('.tpick.open').forEach(x => x.classList.remove('open')));
+
   function pageTrain(src) {
     const opts = [['all', 'Все вопросы'], ['top', '⭐ Ключевые вопросы'], ['new', 'Только не изученные'], ['repeat', '↻ Отмеченные «Повторить»']]
-      .concat((D.road || []).map(r => ['road:' + r.key, '🧭 Дорожная карта: ' + r.lv]))
-      .concat(D.topics.filter(t => t.count).map(t => ['t:' + t.slug, 'Тема: ' + t.title]));
-    const sel = src ? (TOPIC[src] ? 't:' + src : src) : 'all';
+      .concat((D.road || []).map(r => ['road:' + r.key, '🧭 Дорожная карта: ' + r.lv]));
+    const tsel = new Set(TOPIC[src] ? [src] : (S.trTopics || []).filter(x => TOPIC[x]));
+    const sel = src && !TOPIC[src] ? src : 'all';
     main().innerHTML = `<div class="page"><div class="crumbs"><a href="#/">Главная</a></div><h1 class="title">🎯 Тренировка</h1>
       <p class="subtitle">Режим карточек: сначала вопрос — попробуйте ответить вслух, затем откройте ответ и оцените себя.</p>
       <div class="panel"><div class="train-setup">
-        <div class="field"><label>Набор вопросов</label><select id="trSrc">${opts.map(([v, l]) => `<option value="${v}"${v === sel ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select></div>
+        <div class="field"><label>Темы</label>${topicPickerHTML('trTopics', tsel, t => t.count)}</div>
+        <div class="field"><label>Какие вопросы</label><select id="trSrc">${opts.map(([v, l]) => `<option value="${v}"${v === sel ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select></div>
         <div class="field"><label>Порядок</label><select id="trOrd"><option value="rnd">Случайный</option><option value="seq">По порядку</option></select></div>
       </div><div style="margin-top:16px;display:flex;gap:10px;align-items:center"><button class="btn" id="trGo">Начать</button><span class="muted" id="trCnt"></span></div></div>
       <div id="trArea"></div></div>`;
-    const upd = () => { $('#trCnt').textContent = plural(trainSet($('#trSrc').value).length, 'вопрос', 'вопроса', 'вопросов'); };
+    const set = () => { const base = trainSet($('#trSrc').value); return tsel.size ? base.filter(q => tsel.has(q.topic.slug)) : base; };
+    const upd = () => { S.trTopics = [...tsel]; save(); $('#trCnt').textContent = plural(set().length, 'вопрос', 'вопроса', 'вопросов'); };
+    mountTopicPicker('trTopics', tsel, t => t.count, upd);
     $('#trSrc').onchange = upd; upd();
-    $('#trGo').onclick = () => startTrain($('#trSrc').value, $('#trOrd').value);
-    if (src) startTrain(sel, 'rnd');
+    $('#trGo').onclick = () => startTrain(set(), $('#trOrd').value);
+    if (src) startTrain(set(), 'rnd');
     $('.main').scrollTop = 0;
   }
   function trainSet(src) {
@@ -696,7 +854,7 @@
     return ORDER.slice();
   }
   function startTrain(src, ord) {
-    const list = trainSet(src);
+    const list = Array.isArray(src) ? src.slice() : trainSet(src);
     if (ord === 'rnd') for (let i = list.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [list[i], list[j]] = [list[j], list[i]]; }
     T = { list, i: 0, shown: false, lv: S.level, k: 0, r: 0 };
     renderTrain();
@@ -742,26 +900,29 @@
     const done = Object.keys(S.qz).filter(k => ZID[k]).length, ok = Object.keys(S.qz).filter(k => ZID[k] && S.qz[k] === 1).length;
     const wrong = ZALL.filter(z => S.qz[z.id] === 0).length;
     let sel = 'all';
-    if (arg && arg.startsWith('q/')) sel = 'q:' + arg.slice(2); else if (arg === 'wrong') sel = 'wrong'; else if (arg && QZ_BY_T[arg]) sel = 't:' + arg;
+    if (arg && arg.startsWith('q/')) sel = 'q:' + arg.slice(2); else if (arg === 'wrong') sel = 'wrong';
+    const tsel = new Set(arg && QZ_BY_T[arg] ? [arg] : sel.startsWith('q:') ? [] : (S.qzTopics || []).filter(x => QZ_BY_T[x]));
     const opts = [['all', 'Все вопросы'], ['new', 'Ещё не решённые'], ['wrong', `Мои ошибки (${wrong})`]]
-      .concat(sel.startsWith('q:') ? [[sel, 'По вопросу: ' + (Q[sel.slice(2)] || { q: '' }).q.slice(0, 60)]] : [])
-      .concat(D.topics.filter(t => QZ_BY_T[t.slug]).map(t => ['t:' + t.slug, `Тема: ${t.title} (${QZ_BY_T[t.slug].length})`]));
+      .concat(sel.startsWith('q:') ? [[sel, 'По вопросу: ' + (Q[sel.slice(2)] || { q: '' }).q.slice(0, 60)]] : []);
     main().innerHTML = `<div class="page"><div class="crumbs"><a href="#/">Главная</a></div><h1 class="title">🧪 Самотест</h1>
       <p class="subtitle">Вопросы с вариантами ответов. Где правильных ответов несколько, это будет указано: отметьте все подходящие. После проверки увидите разбор и ссылку на подробный ответ.</p>
       <div class="panel"><div class="train-setup">
-        <div class="field"><label>Набор вопросов</label><select id="qzSrc">${opts.map(([v, l]) => `<option value="${v}"${v === sel ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select></div>
+        <div class="field"><label>Темы</label>${topicPickerHTML('qzTopics', tsel, t => (QZ_BY_T[t.slug] || []).length)}</div>
+        <div class="field"><label>Какие вопросы</label><select id="qzSrc">${opts.map(([v, l]) => `<option value="${v}"${v === sel ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select></div>
         <div class="field"><label>Количество</label><select id="qzCnt"><option value="10">10 вопросов</option><option value="20" selected>20 вопросов</option><option value="40">40 вопросов</option><option value="0">Все</option></select></div>
       </div><div style="margin-top:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><button class="btn" id="qzGo">Начать тест</button><span class="muted" id="qzInfo"></span>
       <span class="muted" style="margin-left:auto">Решено: ${done} из ${ZALL.length} · верно ${done ? Math.round(ok / done * 100) : 0}%</span></div></div>
       <div id="qzArea"></div></div>`;
-    const upd = () => { $('#qzInfo').textContent = 'доступно: ' + quizSet($('#qzSrc').value).length; };
+    const set = () => { const v = $('#qzSrc').value, base = quizSet(v); return tsel.size && !v.startsWith('q:') ? base.filter(z => tsel.has(z.t)) : base; };
+    const upd = () => { if (!sel.startsWith('q:')) { S.qzTopics = [...tsel]; save(); } $('#qzInfo').textContent = 'доступно: ' + set().length; };
+    mountTopicPicker('qzTopics', tsel, t => (QZ_BY_T[t.slug] || []).length, upd);
     $('#qzSrc').onchange = upd; upd();
-    $('#qzGo').onclick = () => startQuiz($('#qzSrc').value, +$('#qzCnt').value);
-    if (arg) startQuiz(sel, sel.startsWith('q:') ? 0 : 20);
+    $('#qzGo').onclick = () => startQuiz(set(), +$('#qzCnt').value);
+    if (arg) startQuiz(set(), sel.startsWith('q:') ? 0 : 20);
     $('.main').scrollTop = 0;
   }
   function startQuiz(src, cnt) {
-    let list = shuffle(quizSet(src));
+    let list = shuffle(Array.isArray(src) ? src.slice() : quizSet(src));
     if (cnt) list = list.slice(0, cnt);
     QZ = { list: list.map(z => ({ z, perm: shuffle(z.o.map((_, i) => i)), pick: new Set(), checked: false, ok: null })), i: 0 };
     renderQuiz();
@@ -1304,6 +1465,11 @@
     if (pool.length < 5) pool = base.length ? base : ORDER.filter(q => !q.topic.module);
     return pool[(strHash(S.qod.d + P.cur + S.level) + S.qod.skip) % pool.length];
   }
+  function quoteOfDay() {
+    const Qs = D.quotes || []; if (!Qs.length) return null;
+    if (S.qtDay !== todayKey()) { S.qtDay = todayKey(); S.qtSkip = 0; }
+    return Qs[(strHash('q' + todayKey()) + (S.qtSkip || 0)) % Qs.length];
+  }
   function termOfDay() { const pool = GL.filter(g => (S.gl || {})[g.t] !== 'k' && Q[g.q]); return pool.length ? pool[strHash('t' + todayKey() + P.cur) % pool.length] : null; }
   function exampleOfDay() { return DD_ALL.length ? DD_ALL[strHash('d' + todayKey() + P.cur) % DD_ALL.length] : null; }
 
@@ -1350,7 +1516,7 @@
     tests: [['#/quiz', '🧪 Самотест'], ['#/exam', '🎫 Экзамен и билеты']],
     train: [['#/train', '🎯 Вопросы'], ['#/gloss/train', '📘 Термины']],
     gloss: [['#/gloss', '📘 Глоссарий'], ['#/compare', '⚖️ Сравнения'], ['#/dodont', '✅❌ Правильно и неправильно']],
-    tools: [['#/jwt', '🔑 JWT'], ['#/json', '{ } JSON']],
+    tools: [['#/jwt', '🔑 JWT'], ['#/json', '{ } JSON'], ['#/hash', '# Хеши и Base64']],
     prog: [['#/stats', '📊 Статистика'], ['#/repeat', '↻ На повторение'], ['#/notes', '📝 Заметки'], ['#/top', '⭐ Ключевые вопросы']],
   };
   function currentModule(h) {
@@ -1436,6 +1602,15 @@
       .map(([href, i, t, id]) => href === 'menu' ? `<button class="bb-i" id="bbMenu"><span>${i}</span>${t}</button>` : `<a class="bb-i${mod === id ? ' on' : ''}" href="${href}" data-hint="${esc(HINTS[id] || t)}"><span>${i}</span>${t}</a>`).join('');
     $('#bbMenu').onclick = () => setNav(true);
   }
+  // ---------- свёрнутое меню (только иконки) ----------
+  function applySideMini() {
+    document.body.classList.toggle('side-mini', !!S.sideMini);
+    const b = $('#sideToggle'); if (b) { b.textContent = S.sideMini ? '»' : '«'; b.dataset.hint = S.sideMini ? 'Развернуть меню' : 'Свернуть меню до иконок — больше места для текста'; }
+  }
+  $('#sideToggle').onclick = e => { e.stopPropagation(); S.sideMini = !S.sideMini; save(); document.body.classList.remove('mini-open'); applySideMini(); };
+  document.addEventListener('click', e => { if (document.body.classList.contains('mini-open') && document.contains(e.target) && !e.target.closest('.nav, .nav-filter, #miniTopics')) document.body.classList.remove('mini-open'); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') document.body.classList.remove('mini-open'); });
+  applySideMini();
   // ---------- мобильное меню ----------
   const isMobile = () => matchMedia('(max-width: 900px)').matches;
   function setNav(open) { document.body.classList.toggle('nav-open', open); }
@@ -1443,16 +1618,56 @@
   $('#navScrim').onclick = () => setNav(false);
   document.addEventListener('click', e => { if (isMobile() && e.target.closest('.sidebar a[href^="#"]')) setNav(false); });
 
+  // ---------- история: возврат туда, где были ----------
+  // для каждой записи истории браузера запоминаем прокрутку, раскрытые ответы и фильтр темы
+  let navIdx = -1; const NAV = [];
+  function navSave() {
+    const m = $('.main'); if (!m || navIdx < 0) return;
+    const st = Object.assign({}, history.state || {}, { idx: navIdx, sc: Math.round(m.scrollTop), open: $$('.card.open').map(c => c.dataset.id).slice(0, 40), tf: topicFilter });
+    try { history.replaceState(st, ''); } catch (e) { }
+  }
+  let navSaveT = 0;
+  $('.main').addEventListener('scroll', () => { clearTimeout(navSaveT); navSaveT = setTimeout(navSave, 120); }, { passive: true });
+  function pageLabel(h) {
+    let m;
+    if ((m = h.match(/^#\/(?:q|solve)\/(.+)$/)) && Q[m[1]]) { const t = Q[m[1]].q; return t.length > 60 ? t.slice(0, 58) + '…' : t; }
+    if ((m = h.match(/^#\/t\/([^/]+)/)) && TOPIC[m[1]]) return TOPIC[m[1]].title + (h.endsWith('/do') ? ' · правильно и неправильно' : '');
+    if (h === '#/' || h === '') return 'Главная';
+    const t = $('#content h1'); return t ? t.textContent.replace(/^[^\p{L}\p{N}{]+/u, '').trim().slice(0, 60) : 'предыдущая страница';
+  }
+  function navBefore() {
+    const st = history.state;
+    if (st && typeof st.idx === 'number') { navIdx = st.idx; return st.sc !== undefined ? st : null; }
+    navIdx = navIdx + 1; NAV.length = navIdx;
+    try { history.replaceState({ idx: navIdx }, ''); } catch (e) { }
+    return null;
+  }
+  function navAfter(h, saved) {
+    NAV[navIdx] = { hash: h, title: pageLabel(h) };
+    const prev = NAV[navIdx - 1];
+    if (prev && prev.hash !== h && h !== '#/') {
+      const b = document.createElement('button'); b.className = 'back-pill'; b.dataset.hint = 'Вернуться туда, где вы были (как кнопка «Назад» браузера)';
+      b.innerHTML = `<span>←</span> Назад: <b>${esc(prev.title)}</b>`; b.onclick = () => history.back();
+      main().insertBefore(b, main().firstChild);
+    }
+    if (saved) {
+      (saved.open || []).forEach(id => { const c = $('#q-' + CSS.escape(id)); if (c) toggleCard(c, true); });
+      const restore = () => { const m = $('.main'); if (m) m.scrollTo({ top: saved.sc || 0, behavior: 'instant' }); };
+      restore(); requestAnimationFrame(() => requestAnimationFrame(restore)); setTimeout(restore, 120);
+    }
+  }
+
   // ---------- роутер ----------
   function route() {
     const h = decodeURIComponent(location.hash || '#/');
+    const saved = navBefore(); if (saved && saved.tf) topicFilter = saved.tf;
     tip.classList.remove('show'); sDrop().classList.remove('open'); const spop = document.getElementById('stylePop'); if (spop) spop.classList.remove('open'); sInput().blur(); QZ = null; setNav(false);
     let m;
     if ((m = h.match(/^#\/t\/([^/]+)\/do$/)) && TOPIC[m[1]]) { curTopicPage = null; pageDoDont(m[1]); }
     else if (h === '#/about' || h === '#/about/support') { curTopicPage = null; pageAbout(); if (h.endsWith('/support')) { const go = () => { const el = $('#support'); if (el && location.hash === '#/about/support') el.scrollIntoView({ block: 'start' }); }; setTimeout(go, 60); (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => setTimeout(go, 30)); } }
     else if (h === '#/dodont') { curTopicPage = null; pageDoDontAll(); }
-    else if ((m = h.match(/^#\/t\/(.+)$/))) { if (TOPIC[m[1]] !== curTopicPage) topicFilter = 'all'; curTopicPage = TOPIC[m[1]]; pageTopic(m[1]); }
-    else if ((m = h.match(/^#\/q\/(.+)$/)) && Q[m[1]]) { const q = Q[m[1]]; if (curTopicPage !== q.topic) topicFilter = 'all'; curTopicPage = q.topic; pageTopic(q.topic.slug, q.id); }
+    else if ((m = h.match(/^#\/t\/(.+)$/))) { if (TOPIC[m[1]] !== curTopicPage && !saved) topicFilter = 'all'; curTopicPage = TOPIC[m[1]]; pageTopic(m[1]); }
+    else if ((m = h.match(/^#\/q\/(.+)$/)) && Q[m[1]]) { const q = Q[m[1]]; if (curTopicPage !== q.topic && !saved) topicFilter = 'all'; curTopicPage = q.topic; pageTopic(q.topic.slug, q.id); }
     else if (EXT.some(x => (m = h.match(x.re)) && (curTopicPage = null, x.page(API, m), true))) { }
     else if ((m = h.match(/^#\/solve\/(.+)$/)) && Q[m[1]]) { curTopicPage = Q[m[1]].topic; topicFilter = 'all'; openSolve(m[1]); }
     else if (h === '#/leetcode') { curTopicPage = null; pageLeet(); }
@@ -1471,7 +1686,7 @@
     else if ((m = h.match(/^#\/quiz(?:\/(.+))?$/))) { curTopicPage = null; pageQuiz(m[1]); }
     else if ((m = h.match(/^#\/search\/(.+)$/))) { curTopicPage = null; pageSearch(m[1]); }
     else { curTopicPage = null; pageHome(); }
-    addTabs(h); renderNav(); renderBottomBar(h);
+    addTabs(h); navAfter(h, saved); renderNav(); renderBottomBar(h); document.body.classList.remove('mini-open');
   }
   let curTopicPage = null;
 
@@ -1535,10 +1750,29 @@
     if (!QZ && (e.key.toLowerCase() === 'r' || e.key.toLowerCase() === 'к')) randomQ();
   });
 
+  // ---------- проверка обновлений ----------
+  const cmpVer = (a, b) => { const x = String(a).split('.').map(Number), y = String(b).split('.').map(Number); for (let i = 0; i < Math.max(x.length, y.length); i++) { const d = (x[i] || 0) - (y[i] || 0); if (d) return d; } return 0; };
+  function checkUpdate() {
+    if (!META.site || !navigator.onLine || !window.fetch) return;
+    fetch(META.site + 'version.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(v => {
+      if (!v || !v.version || cmpVer(v.version, META.version) <= 0 || sessionStorage.getItem('vibeoff:upd-later') === v.version || $('#updBar')) return;
+      const online = location.protocol.startsWith('http');
+      const bar = document.createElement('div'); bar.id = 'updBar'; bar.className = 'upd-bar';
+      bar.innerHTML = `<span>✨ Вышла новая версия <b>v${esc(v.version)}</b>${v.title ? ': ' + esc(v.title) : ''}</span>
+        ${online ? '<button class="btn" id="updGo">Обновить</button>' : `<a class="btn" id="updGo" href="${esc(META.download || META.site)}">Скачать</a>`}<button class="chip" id="updLater">Позже</button>`;
+      document.body.appendChild(bar);
+      if (online) $('#updGo').onclick = () => { save(); location.replace(location.pathname + '?v=' + encodeURIComponent(v.version) + location.hash); };
+      $('#updLater').onclick = () => { sessionStorage.setItem('vibeoff:upd-later', v.version); bar.remove(); };
+    }).catch(() => { });
+  }
+  setTimeout(checkUpdate, 2500); setInterval(checkUpdate, 30 * 60 * 1000);
+
   // ---------- старт ----------
   lastSig = learnSig();
+  if (!Array.isArray(S.achGot)) S.achGot = achievements().filter(a => a[3]).map(a => a[1]);   // уже полученные — без поздравлений
   applyTheme(); renderLevelSeg(); renderProfile();
   setTimeout(versionHint, 800);
   window.addEventListener('hashchange', route);
+  document.addEventListener('click', e => { const a = e.target.closest && e.target.closest('a[href^="#"]'); if (a) { clearTimeout(navSaveT); navSave(); } }, true);
   route();
 })();

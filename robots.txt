@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://3meshokccaxapom3.github.io/VibeOFF/sitemap.xml
