@@ -659,8 +659,9 @@
           <span class="sp"></span><button class="chip" id="expAll">Развернуть все</button><button class="chip" id="colAll">Свернуть</button><a class="chip" href="#/train/${t.slug}">🎯 Тренировка</a>${QZ_BY_T[t.slug] ? `<a class="chip" href="#/quiz/${t.slug}">🧪 Тест по теме · ${QZ_BY_T[t.slug].length}</a>` : ''}</div></div>
       ${t.sections.map(sec => { const items = sec.items.filter(pass); if (!items.length) return ''; return (sec.title ? `<div class="sec-title">${esc(sec.title)}</div>` : '') + items.map(q => cardHTML(q)).join(''); }).join('') || '<div class="empty"><div class="big">🎉</div>В этом фильтре вопросов нет</div>'}
       ${t.gallery && t.gallery.length ? `<div class="sec-title">Архив: слайды по JUnit 4</div><div class="panel legacy"><p class="muted" style="margin-top:0">Это слайды по <b>JUnit 4</b> (@Before, @BeforeClass, @Ignore, @Test(expected/timeout), правило «should» в имени). Для справки они сохранены, но в новых проектах используйте JUnit 5/6 — актуальные схемы и таблица соответствия аннотаций приведены в вопросах выше.</p>${galleryHTML(t.gallery, 'JUnit 4 — устаревшие слайды')}</div>` : ''}
-    </div><aside class="outline"><div class="outline-h">Содержание темы</div>${t.sections.map(sec => (sec.title ? `<div class="o-sec">${esc(sec.title)}</div>` : '') + sec.items.filter(pass).map(q => `<a href="#/q/${q.id}" data-id="${q.id}" class="${st(q.id)}">${esc(q.q)}</a>`).join('')).join('')}</aside></div>`;
+    </div><button class="outline-tab" id="olTab" data-hint="Содержание темы: наведите или нажмите">☰ Содержание</button><aside class="outline"><div class="outline-h"><span>Содержание темы</span><button class="ol-pin" id="olPin" data-hint="${S.outlinePin ? 'Спрятать содержание к краю — оно будет выезжать при наведении' : 'Закрепить содержание колонкой справа'}">${S.outlinePin ? '⇥' : '📌'}</button></div>${t.sections.map(sec => (sec.title ? `<div class="o-sec">${esc(sec.title)}</div>` : '') + sec.items.filter(pass).map(q => `<a href="#/q/${q.id}" data-id="${q.id}" class="${st(q.id)}">${esc(q.q)}</a>`).join('')).join('')}</aside></div>`;
     $$('.chip[data-f]').forEach(c => c.onclick = () => { topicFilter = c.dataset.f; pageTopic(slug); });
+    mountOutline();
     $('#expAll').onclick = () => $$('.card').forEach(c => toggleCard(c, true));
     $('#colAll').onclick = () => $$('.card').forEach(c => toggleCard(c, false));
     // scrollspy
@@ -676,6 +677,29 @@
       requestAnimationFrame(() => { card.scrollIntoView({ block: 'start', behavior: 'instant' }); card.classList.add('flash'); });
     } else $('.main').scrollTop = 0;
   }
+  // содержание темы: прячется к правому краю, выезжает при наведении или нажатии на язычок; 📌 — закрепить колонкой
+  let olT = 0;
+  function setOutlineMode() {
+    const has = !!$('.topic-layout .outline');
+    document.body.classList.toggle('has-outline', has);
+    document.body.classList.toggle('ol-auto', has && !S.outlinePin);
+    if (!has) document.body.classList.remove('ol-open');
+  }
+  function mountOutline() {
+    setOutlineMode();
+    const ol = $('.topic-layout .outline'), tab = $('#olTab'); if (!ol || !tab) return;
+    const open = v => { clearTimeout(olT); if (v) document.body.classList.add('ol-open'); else olT = setTimeout(() => document.body.classList.remove('ol-open'), 280); };
+    const hover = () => matchMedia('(hover: hover)').matches;
+    tab.onmouseenter = () => { if (hover()) open(true); };
+    tab.onclick = () => open(true);
+    ol.onmouseenter = () => { if (document.body.classList.contains('ol-auto')) open(true); };
+    ol.onmouseleave = () => { if (document.body.classList.contains('ol-auto') && hover()) open(false); };
+    $('#olPin').onclick = e => { e.stopPropagation(); S.outlinePin = !S.outlinePin; save(); document.body.classList.remove('ol-open'); const sc = $('.main').scrollTop; pageTopic(curTopicPage ? curTopicPage.slug : (location.hash.match(/^#\/t\/([^/]+)/) || [])[1]); $('.main').scrollTop = sc; };
+    $$('a', ol).forEach(a => a.addEventListener('click', () => { if (document.body.classList.contains('ol-auto')) document.body.classList.remove('ol-open'); }));
+  }
+  document.addEventListener('click', e => { if (document.body.classList.contains('ol-open') && document.contains(e.target) && !e.target.closest('.outline, #olTab')) document.body.classList.remove('ol-open'); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') document.body.classList.remove('ol-open'); });
+
   function updateTopicProgress() {
     const m = location.hash.match(/^#\/t\/(.+)$/) || (location.hash.startsWith('#/q/') ? [0, (Q[location.hash.slice(4)] || { topic: {} }).topic.slug] : null);
     if (!m || !TOPIC[m[1]]) return;
@@ -1707,7 +1731,7 @@
     else if ((m = h.match(/^#\/quiz(?:\/(.+))?$/))) { curTopicPage = null; pageQuiz(m[1]); }
     else if ((m = h.match(/^#\/search\/(.+)$/))) { curTopicPage = null; pageSearch(m[1]); }
     else { curTopicPage = null; pageHome(); }
-    addTabs(h); navAfter(h, saved); renderNav(); renderBottomBar(h); document.body.classList.remove('mini-open', 'side-peek'); applySideMini(h);
+    addTabs(h); navAfter(h, saved); renderNav(); renderBottomBar(h); document.body.classList.remove('mini-open', 'side-peek', 'ol-open'); applySideMini(h); setOutlineMode();
   }
   let curTopicPage = null;
 
