@@ -555,7 +555,7 @@
         <input id="auFrom" class="au-in" type="email" placeholder="Ваша почта для ответа (необязательно)" value="${esc(S.fbEmail || '')}" autocomplete="email">
         <textarea id="auWish" placeholder="Например: добавить тему про …, в вопросе «…» неточность, хочется тренажёр по …">${esc(S.wish || '')}</textarea>
         <input id="auHoney" class="au-honey" tabindex="-1" autocomplete="off" aria-hidden="true">
-        <div class="au-act"><button class="btn" id="auSend" data-hint="Отправить сообщение автору">✉ Отправить</button><span class="muted" id="auNote">${META.feedback ? 'Сообщение уйдёт автору через сервис FormSubmit. Без интернета откроется почтовая программа.' : 'Откроется почтовая программа с готовым письмом.'}</span></div>
+        <div class="au-act"><button class="btn" id="auSend" data-hint="Отправить сообщение автору">✉ Отправить</button><span class="muted" id="auNote">${META.feedback ? 'Сообщение уйдёт автору сразу. Без интернета откроется почтовая программа.' : 'Откроется почтовая программа с готовым письмом.'}</span></div>
         <div id="auRes"></div>
         <blockquote class="au-quote">«Зорко одно лишь сердце. Самого главного глазами не увидишь.»<cite>— Антуан де Сент-Экзюпери, «Маленький принц»</cite></blockquote>
       </div>
@@ -586,18 +586,13 @@
       if (!META.feedback) { mailto(); return; }
       if (!navigator.onLine) { fallback('Нет подключения к интернету.'); return; }
       const btn = $('#auSend'); btn.disabled = true; btn.textContent = 'Отправляю…'; $('#auRes').innerHTML = '';
-      const data = { name: from || 'Пользователь VibeOFF', message: text, _subject: 'VibeOFF: пожелание', _template: 'table', _captcha: 'false', version: META.version || '', page: location.protocol.startsWith('http') ? 'сайт' : 'скачанная копия' };
-      if (from) { data.email = from; data._replyto = from; }
+      const data = { access_key: META.feedbackKey || '', subject: 'VibeOFF: пожелание', from_name: from || 'Пользователь VibeOFF', message: text,
+        version: META.version || '', page: location.protocol.startsWith('http') ? 'сайт' : 'скачанная копия' };
+      if (from) { data.email = from; data.replyto = from; }
       try {
-        let ok;
-        if (/\/ajax\//.test(META.feedback)) {
-          const r = await fetch(META.feedback, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(data) });
-          const j = await r.json().catch(() => ({}));
-          ok = r.ok && String(j.success) === 'true';
-          if (!ok && /activat/i.test(j.message || '')) { fallback('Форма обратной связи ещё не активирована автором.'); return; }
-        } else {
-          await fetch(META.feedback, { method: 'POST', mode: 'no-cors', body: new URLSearchParams(data) }); ok = true;
-        }
+        const r = await fetch(META.feedback, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(data) });
+        const j = await r.json().catch(() => ({}));
+        const ok = r.ok && (j.success === true || String(j.success) === 'true');
         if (ok) { $('#auRes').innerHTML = `<div class="au-res ok">✓ Спасибо! Сообщение отправлено${from ? ', ответ придёт на ' + esc(from) : ''}.</div>`; $('#auWish').value = ''; S.wish = ''; save(); }
         else fallback('Сервис не принял сообщение.');
       } catch (e) { fallback('Не удалось связаться с сервисом отправки.'); }
