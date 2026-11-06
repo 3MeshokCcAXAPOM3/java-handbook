@@ -66,6 +66,7 @@
   const imgSrc = src => effTheme() === 'dark' && src.startsWith('img/svg/') ? src.replace('img/svg/', 'img/svg-dark/') : src;
   function applyTheme() {
     document.documentElement.dataset.theme = effTheme(); document.documentElement.dataset.style = S.style;
+    applyWall();
     $$('img[data-src0]').forEach(im => { im.src = imgSrc(im.dataset.src0); });
     if ($('#lb').classList.contains('open')) showLB();
   }
@@ -383,7 +384,7 @@
   // ---------- экскурсия для нового пользователя ----------
   const TOUR = [
     ['.mod-grid', 'Модули', 'Тренажёры, тесты, тренировка, глоссарий, прогресс и инструменты. Наведите на иконку — появится подсказка, что она делает.'],
-    ['.nav', 'Темы', 'Все темы по группам: от Java Core и Kotlin до архитектуры и практики. Кнопка « у края сворачивает меню до иконок.'],
+    ['.nav', 'Темы', 'Все темы по группам: от Java Core и Kotlin до архитектуры и практики. Когда вы читаете тему, меню само сворачивается до иконок, чтобы не отвлекать; наведите на него — оно развернётся.'],
     ['#bottomBar', 'Быстрые переходы', 'Главная, темы, LeetCode, тесты и прогресс — всегда под рукой.'],
     ['#menuBtn', 'Меню', 'Здесь все модули и темы.'],
     ['#lvSeg', 'Уровень ответа', 'Junior — основа, Middle — детали и практика, Senior — устройство и компромиссы, «Подробно» — развёрнутая статья.'],
@@ -1597,15 +1598,40 @@
       .map(([href, i, t, id]) => href === 'menu' ? `<button class="bb-i" id="bbMenu"><span>${i}</span>${t}</button>` : `<a class="bb-i${mod === id ? ' on' : ''}" href="${href}" data-hint="${esc(HINTS[id] || t)}"><span>${i}</span>${t}</a>`).join('');
     $('#bbMenu').onclick = () => setNav(true);
   }
-  // ---------- свёрнутое меню (только иконки) ----------
-  function applySideMini() {
-    document.body.classList.toggle('side-mini', !!S.sideMini);
-    const b = $('#sideToggle'); if (b) { b.textContent = S.sideMini ? '»' : '«'; b.dataset.hint = S.sideMini ? 'Развернуть меню' : 'Свернуть меню до иконок — больше места для текста'; }
+  // ---------- меню: само сворачивается на страницах тем, разворачивается при наведении ----------
+  // S.sidePin: null — автоматически; 'open' / 'mini' — закреплено вручную стрелкой
+  if (S.sideMini !== undefined) { delete S.sideMini; }
+  const isReading = h => /^#\/(t|q|solve)\//.test(h || '');
+  const autoMini = h => isReading(h);
+  function applySideMini(h) {
+    h = h === undefined ? decodeURIComponent(location.hash || '#/') : h;
+    const wide = matchMedia('(min-width: 901px)').matches;   // на телефоне меню — шторка, сворачивать нечего
+    const mini = wide && (S.sidePin ? S.sidePin === 'mini' : autoMini(h));
+    document.body.classList.toggle('side-mini', mini);
+    if (!mini) document.body.classList.remove('side-peek');
+    const b = $('#sideToggle'); if (!b) return;
+    b.textContent = mini ? '»' : '«';
+    b.dataset.hint = mini
+      ? (S.sidePin ? 'Развернуть меню' : 'Меню свёрнуто само, чтобы не отвлекать. Наведите — развернётся; нажмите — закрепить развёрнутым')
+      : (S.sidePin ? 'Свернуть меню до иконок' : 'Свернуть меню до иконок (на страницах тем оно сворачивается само)');
   }
-  $('#sideToggle').onclick = e => { e.stopPropagation(); S.sideMini = !S.sideMini; save(); document.body.classList.remove('mini-open'); applySideMini(); };
+  $('#sideToggle').onclick = e => {
+    e.stopPropagation();
+    const h = decodeURIComponent(location.hash || '#/'), cur = document.body.classList.contains('side-mini'), next = !cur;
+    S.sidePin = next === autoMini(h) ? null : (next ? 'mini' : 'open');   // совпало с автоматикой — снова автоматически
+    save(); document.body.classList.remove('mini-open', 'side-peek'); applySideMini(h);
+  };
+  // наведение на полосу иконок — меню выезжает поверх страницы, увели мышь — сворачивается
+  let peekT = 0;
+  $('.sidebar').addEventListener('mouseenter', () => {
+    if (!document.body.classList.contains('side-mini') || !matchMedia('(hover: hover) and (min-width: 901px)').matches) return;
+    clearTimeout(peekT); peekT = setTimeout(() => document.body.classList.add('side-peek'), 220);
+  });
+  $('.sidebar').addEventListener('mouseleave', () => { clearTimeout(peekT); peekT = setTimeout(() => document.body.classList.remove('side-peek'), 250); });
   document.addEventListener('click', e => { if (document.body.classList.contains('mini-open') && document.contains(e.target) && !e.target.closest('.nav, .nav-filter, #miniTopics')) document.body.classList.remove('mini-open'); });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') document.body.classList.remove('mini-open'); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') document.body.classList.remove('mini-open', 'side-peek'); });
   applySideMini();
+  matchMedia('(min-width: 901px)').addEventListener('change', () => applySideMini());
   // ---------- мобильное меню ----------
   const isMobile = () => matchMedia('(max-width: 900px)').matches;
   function setNav(open) { document.body.classList.toggle('nav-open', open); }
@@ -1681,7 +1707,7 @@
     else if ((m = h.match(/^#\/quiz(?:\/(.+))?$/))) { curTopicPage = null; pageQuiz(m[1]); }
     else if ((m = h.match(/^#\/search\/(.+)$/))) { curTopicPage = null; pageSearch(m[1]); }
     else { curTopicPage = null; pageHome(); }
-    addTabs(h); navAfter(h, saved); renderNav(); renderBottomBar(h); document.body.classList.remove('mini-open');
+    addTabs(h); navAfter(h, saved); renderNav(); renderBottomBar(h); document.body.classList.remove('mini-open', 'side-peek'); applySideMini(h);
   }
   let curTopicPage = null;
 
@@ -1695,6 +1721,16 @@
     if (T && $('#trArea')) trainLevel(l);
   }
   $('#lvSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setLevel(b.dataset.l); });
+  // обои: одна обработанная картинка на каждый вариант, рисунок окрашивается цветом акцента активного стиля
+  const WALLS = D.walls || [];
+  if (location.protocol === 'file:') document.documentElement.classList.add('file-mode');
+  function applyWall() {
+    let id = S.wall || 'none';
+    if (id === 'daily' && WALLS.length) id = WALLS[strHash('w' + todayKey()) % WALLS.length][0];
+    const ok = WALLS.some(w => w[0] === id);
+    document.body.classList.toggle('has-wall', ok);
+    if (ok) $('#wall').style.setProperty('--wall-img', `url("../wallpapers/${id}.jpg")`   /* путь считается от assets/css/style.css */);
+  }
   // окно оформления: тема и стиль
   const STYLES = [
     ['lime', 'Soft Lime', 'по умолчанию: свежо, без неона', ['#a3d65c', '#202720', '#f5f6f1']],
@@ -1706,9 +1742,14 @@
   const stylePop = document.createElement('div'); stylePop.className = 'style-pop'; stylePop.id = 'stylePop'; document.body.appendChild(stylePop);
   function renderStylePop() {
     stylePop.innerHTML = `<div class="sp-h">Тема</div><div class="sp-modes">${[['light', '☀️ Светлая'], ['dark', '🌙 Тёмная'], ['auto', '🖥 Как в системе']].map(([k, l]) => `<button data-mode="${k}" class="${S.theme === k ? 'on' : ''}">${l}</button>`).join('')}</div>
+      <div class="sp-h">Обои <span class="sp-note">по краям широкого экрана</span></div><div class="sp-walls">
+        <button class="sp-w${!S.wall || S.wall === 'none' ? ' on' : ''}" data-wall="none" data-hint="Без обоев — спокойный фон"><span class="sp-wt none">—</span>Нет</button>
+        <button class="sp-w${S.wall === 'daily' ? ' on' : ''}" data-wall="daily" data-hint="Каждый день — другие обои"><span class="sp-wt none">↻</span>Каждый день</button>
+        ${WALLS.map(([id, t]) => `<button class="sp-w${S.wall === id ? ' on' : ''}" data-wall="${id}" data-hint="${esc(t)}"><span class="sp-wt" style="--t:url('../wallpapers/${id}-thumb.jpg')"></span>${esc(t)}</button>`).join('')}</div>
       <div class="sp-h">Стиль</div><div class="sp-styles">${STYLES.map(([k, t, d, c]) => `<button class="sp-st${S.style === k ? ' on' : ''}" data-style="${k}"><span class="sp-sw">${c.map(x => `<i style="background:${x}"></i>`).join('')}</span><b>${t}</b><span>${d}</span></button>`).join('')}</div>`;
     $$('[data-mode]', stylePop).forEach(b => b.onclick = () => { S.theme = b.dataset.mode; save(); applyTheme(); renderStylePop(); });
     $$('.sp-st', stylePop).forEach(b => b.onclick = () => { S.style = b.dataset.style; save(); applyTheme(); renderStylePop(); });
+    $$('[data-wall]', stylePop).forEach(b => b.onclick = () => { S.wall = b.dataset.wall; save(); applyWall(); renderStylePop(); });
   }
   $('#themeBtn').onclick = e => { e.stopPropagation(); renderStylePop(); stylePop.classList.toggle('open'); };
   stylePop.addEventListener('click', e => e.stopPropagation());

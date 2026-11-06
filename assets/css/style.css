@@ -1110,19 +1110,19 @@ a.feat:hover{border-color:var(--accent)}
 .side-toggle:hover{color:var(--accent-ink);border-color:var(--accent)}
 .mini-only{display:none}
 body.side-mini .app{grid-template-columns:72px 1fr}
-body.side-mini .brand{padding:18px 0 10px;justify-content:center}
-body.side-mini .brand>div:last-child,body.side-mini .profile,body.side-mini .side-foot,body.side-mini .mod .mt{display:none}
-body.side-mini .side-links{padding:4px 8px}
-body.side-mini .mod-grid{grid-template-columns:1fr;gap:2px}
-body.side-mini .mod{padding:8px 0}
-body.side-mini .mod .mi{font-size:21px}
-body.side-mini .mini-only{display:flex}
-body.side-mini .nav,body.side-mini .nav-filter{display:none}
+body.side-mini:not(.side-peek) .brand{padding:18px 0 10px;justify-content:center}
+body.side-mini:not(.side-peek) .brand>div:last-child,body.side-mini:not(.side-peek) .profile,body.side-mini:not(.side-peek) .side-foot,body.side-mini:not(.side-peek) .mod .mt{display:none}
+body.side-mini:not(.side-peek) .side-links{padding:4px 8px}
+body.side-mini:not(.side-peek) .mod-grid{grid-template-columns:1fr;gap:2px}
+body.side-mini:not(.side-peek) .mod{padding:8px 0}
+body.side-mini:not(.side-peek) .mod .mi{font-size:21px}
+body.side-mini:not(.side-peek) .mini-only{display:flex}
+body.side-mini:not(.side-peek) .nav,body.side-mini:not(.side-peek) .nav-filter{display:none}
 body.side-mini.mini-open .nav-filter{display:block;position:fixed;left:72px;top:0;width:310px;z-index:41;background:var(--side);padding:14px 12px 8px;border-right:1px solid var(--line)}
 body.side-mini.mini-open .nav{display:block;position:fixed;left:72px;top:58px;bottom:0;width:310px;z-index:40;background:var(--side);border-right:1px solid var(--line);box-shadow:12px 0 30px rgba(0,0,0,.12)}
-body.side-mini .mod.mini-only{border:0;background:none;color:var(--muted);font:inherit;font-size:10.5px;width:100%;flex-direction:column;align-items:center}
+body.side-mini:not(.side-peek) .mod.mini-only{border:0;background:none;color:var(--muted);font:inherit;font-size:10.5px;width:100%;flex-direction:column;align-items:center}
 body.side-mini.mini-open #miniTopics{background:var(--panel);box-shadow:var(--shadow)}
-@media (max-width:900px){.side-toggle{display:none}body.side-mini .app{grid-template-columns:1fr}body.side-mini .brand>div:last-child,body.side-mini .profile,body.side-mini .side-foot,body.side-mini .mod .mt,body.side-mini .nav,body.side-mini .nav-filter{display:revert}body.side-mini .mod-grid{grid-template-columns:repeat(4,1fr)}body.side-mini .mini-only{display:none}body.side-mini .brand{padding:20px 20px 14px;justify-content:flex-start}}
+@media (max-width:900px){.side-toggle{display:none}body.side-mini .app{grid-template-columns:1fr}body.side-mini .brand>div:last-child,body.side-mini .profile,body.side-mini .side-foot,body.side-mini .mod .mt,body.side-mini .nav,body.side-mini .nav-filter{display:revert}body.side-mini .mod-grid{grid-template-columns:repeat(4,1fr)}body.side-mini .mini-only{display:none}body.side-mini:not(.side-peek) .brand{padding:20px 20px 14px;justify-content:flex-start}}
 
 /* ===== 1.0.4–1.0.5: обратная связь, скачивание, обновления ===== */
 .au-in{width:100%;border:1px solid var(--line2);border-radius:12px;background:var(--panel2);color:var(--text);padding:9px 12px;font:inherit;font-size:14.5px;margin-bottom:8px}
@@ -1159,3 +1159,40 @@ body.side-mini.mini-open #miniTopics{background:var(--panel);box-shadow:var(--sh
 .q-auth{font-size:13px;color:var(--muted);margin-top:2px}
 .quote>div{flex:1}
 .quote .chip{padding:3px 10px}
+
+/* ===== 1.1.2: меню выезжает при наведении ===== */
+.side-toggle{opacity:0;transition:opacity .15s}
+.sidebar:hover .side-toggle,.side-toggle:focus-visible{opacity:1}
+@media (min-width:901px){
+  .app>.main{grid-column:2}
+  body.side-mini.side-peek .sidebar{position:fixed;left:0;top:0;bottom:0;width:292px;z-index:60;box-shadow:16px 0 40px rgba(0,0,0,.18)}
+  body.side-mini .sidebar{transition:box-shadow .15s}
+}
+/* ===== 1.1.1: обои ===== */
+.wall{display:none}
+@media (min-width:1200px){
+  @supports (mask-mode:luminance){
+    body.has-wall .wall{display:block;position:fixed;top:0;bottom:0;right:0;left:292px;z-index:0;pointer-events:none;background:var(--bg);isolation:isolate}
+    body.has-wall.side-mini .wall{left:72px}
+    .wall::before{content:"";position:absolute;inset:0;background:var(--accent-ink);mask:var(--wall-img) center/cover no-repeat;mask-mode:luminance;opacity:.30}
+    [data-theme=dark] .wall::before{background:var(--accent);opacity:.30}
+    .wall::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 0,transparent calc(50% - 780px),var(--bg) calc(50% - 650px),var(--bg) calc(50% + 650px),transparent calc(50% + 780px))}
+    body.has-wall .main{position:relative;z-index:1}
+  }
+}
+.sp-note{text-transform:none;letter-spacing:0;font-weight:500;color:var(--faint);margin-left:4px}
+.sp-walls{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px}
+.sp-w{display:flex;flex-direction:column;align-items:center;gap:4px;border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:10px;padding:5px 4px;font-size:11px;line-height:1.2;text-align:center}
+.sp-w.on{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 35%,transparent)}
+.sp-wt{display:block;width:100%;height:34px;border-radius:6px;background:var(--bg);position:relative;overflow:hidden}
+.sp-wt::before{content:"";position:absolute;inset:0;background:var(--accent);mask:var(--t) center/cover no-repeat;mask-mode:luminance;opacity:.85}
+.sp-wt.none{display:grid;place-items:center;color:var(--muted);font-size:15px}
+.sp-wt.none::before{display:none}
+.style-pop{max-height:calc(100vh - 80px);overflow:auto}
+
+/* обои в скачанной копии (file://): маска-картинка там не работает, окрашиваем фильтрами */
+[data-style=lime]{--wp-hue:47deg}[data-style=sage]{--wp-hue:117deg}[data-style=terminal]{--wp-hue:63deg}[data-style=electric]{--wp-hue:42deg}[data-style=classic]{--wp-hue:191deg}
+html.file-mode .wall::before,html.file-mode .sp-wt::before{mask:none;background:var(--wall-img,var(--t)) center/cover no-repeat;filter:sepia(1) saturate(3.2) hue-rotate(var(--wp-hue));mix-blend-mode:screen;opacity:.36}
+html.file-mode .sp-wt::before{background-image:var(--t);opacity:.9}
+html.file-mode[data-theme=light] .wall::before,html.file-mode[data-theme=light] .sp-wt::before{filter:invert(1) sepia(1) saturate(1.8) hue-rotate(var(--wp-hue));mix-blend-mode:multiply;opacity:.38}
+html.file-mode .sp-wt{isolation:isolate}
