@@ -65,7 +65,7 @@
   const effTheme = () => S.theme === 'auto' ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : S.theme;
   const imgSrc = src => effTheme() === 'dark' && src.startsWith('img/svg/') ? src.replace('img/svg/', 'img/svg-dark/') : src;
   function applyTheme() {
-    document.documentElement.dataset.theme = effTheme(); document.documentElement.dataset.style = S.style;
+    document.documentElement.dataset.theme = effTheme(); document.documentElement.dataset.style = S.style; document.documentElement.dataset.level = S.level;
     applyWall();
     $$('img[data-src0]').forEach(im => { im.src = imgSrc(im.dataset.src0); });
     if ($('#lb').classList.contains('open')) showLB();
@@ -915,6 +915,14 @@
     if (src.startsWith('q:')) return (QZ_BY_REF[src.slice(2)] || []).slice();
     return ZALL.slice();
   }
+  const LVN = { j: 'Junior', m: 'Middle', s: 'Senior' };
+  const LV_OPTS = `<option value="all">Все уровни</option><option value="j">Junior — 4 варианта</option><option value="m">Middle — 5 вариантов</option><option value="s">Senior — 6 вариантов</option>`;
+  // один вопрос на группу вариантов (одинаковые вопросы, заданные по-разному)
+  const uniqueGroups = list => { const seen = new Set(); return list.filter(z => { const g = z.g || z.id; if (seen.has(g)) return false; seen.add(g); return true; }); };
+  const fmtSec = sec => { sec = Math.max(0, Math.round(sec)); return sec >= 60 ? `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}` : `${sec} с`; };
+  const clock = sec => { sec = Math.max(0, Math.floor(sec)); return `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`; };
+  const KIND_OPTS = `<option value="all">Все типы</option><option value="th">Теория</option><option value="code">Что выведет код</option><option value="sql">SQL-задачи</option>`;
+  const speedText = (spent, exp) => { if (!exp) return ''; const d = Math.round((spent / exp - 1) * 100); return d === 0 ? 'ровно в ожидаемое время' : d < 0 ? `на ${-d}% быстрее ожидаемого` : `на ${d}% медленнее ожидаемого`; };
   const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
   function pageQuiz(arg) {
     const done = Object.keys(S.qz).filter(k => ZID[k]).length, ok = Object.keys(S.qz).filter(k => ZID[k] && S.qz[k] === 1).length;
@@ -929,12 +937,16 @@
       <div class="panel"><div class="train-setup">
         <div class="field"><label>Темы</label>${topicPickerHTML('qzTopics', tsel, t => (QZ_BY_T[t.slug] || []).length)}</div>
         <div class="field"><label>Какие вопросы</label><select id="qzSrc">${opts.map(([v, l]) => `<option value="${v}"${v === sel ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select></div>
-        <div class="field"><label>Количество</label><select id="qzCnt"><option value="10">10 вопросов</option><option value="20" selected>20 вопросов</option><option value="40">40 вопросов</option><option value="0">Все</option></select></div>
+        <div class="field"><label>Уровень</label><select id="qzLv">${LV_OPTS}</select></div>
+        <div class="field"><label>Тип вопросов</label><select id="qzKind">${KIND_OPTS}</select></div>
+        <div class="field"><label>Количество</label><select id="qzCnt">${[10, 20, 40, 60, 80, 100].map(n => `<option value="${n}"${n === 20 ? ' selected' : ''}>${n} вопросов</option>`).join('')}<option value="0">Все</option></select></div>
       </div><div style="margin-top:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><button class="btn" id="qzGo">Начать тест</button><span class="muted" id="qzInfo"></span>
       <span class="muted" style="margin-left:auto">Решено: ${done} из ${ZALL.length} · верно ${done ? Math.round(ok / done * 100) : 0}%</span></div></div>
       <div id="qzArea"></div></div>`;
-    const set = () => { const v = $('#qzSrc').value, base = quizSet(v); return tsel.size && !v.startsWith('q:') ? base.filter(z => tsel.has(z.t)) : base; };
-    const upd = () => { if (!sel.startsWith('q:')) { S.qzTopics = [...tsel]; save(); } $('#qzInfo').textContent = 'доступно: ' + set().length; };
+    $('#qzLv').value = S.qzLv || 'all'; $('#qzKind').value = S.qzKind || 'all';
+    const set = () => { const v = $('#qzSrc').value, lv = $('#qzLv').value; let base = quizSet(v); if (tsel.size && !v.startsWith('q:')) base = base.filter(z => tsel.has(z.t)); const k = $('#qzKind').value; if (k !== 'all') base = base.filter(z => z.k === k); return lv === 'all' ? base : base.filter(z => z.lv === lv); };
+    const upd = () => { if (!sel.startsWith('q:')) { S.qzTopics = [...tsel]; } S.qzLv = $('#qzLv').value; S.qzKind = $('#qzKind').value; save(); const all = set(), u = uniqueGroups(all).length; $('#qzInfo').textContent = `доступно: ${u} разных вопросов` + (u < all.length ? ` (ещё ${all.length - u} — те же вопросы другими словами)` : ''); };
+    $('#qzLv').onchange = upd; $('#qzKind').onchange = upd;
     mountTopicPicker('qzTopics', tsel, t => (QZ_BY_T[t.slug] || []).length, upd);
     $('#qzSrc').onchange = upd; upd();
     $('#qzGo').onclick = () => startQuiz(set(), +$('#qzCnt').value);
@@ -942,7 +954,7 @@
     $('.main').scrollTop = 0;
   }
   function startQuiz(src, cnt) {
-    let list = shuffle(Array.isArray(src) ? src.slice() : quizSet(src));
+    let list = uniqueGroups(shuffle(Array.isArray(src) ? src.slice() : quizSet(src)));
     if (cnt) list = list.slice(0, cnt);
     QZ = { list: list.map(z => ({ z, perm: shuffle(z.o.map((_, i) => i)), pick: new Set(), checked: false, ok: null })), i: 0 };
     renderQuiz();
@@ -954,12 +966,14 @@
     if (QZ.i >= QZ.list.length) return renderQuizResult();
     const it = QZ.list[QZ.i], z = it.z, multi = z.c.length > 1;
     const right = QZ.list.filter(x => x.ok).length;
+    if (!it.t0) it.t0 = Date.now();                       // время отсчитывается с показа вопроса
+    clearInterval(QZ.tick);
     a.innerHTML = `<div class="train-bar"><i style="width:${QZ.i / QZ.list.length * 100}%"></i></div>
-      <div class="flash-card quiz">${QZ.exam ? `<div class="ex-head">🎫 ${esc(QZ.exam.title)} · ошибок ${QZ.list.filter(x => x.checked && !x.ok).length} из ${allowedErr(QZ.list.length)} допустимых</div>` : ''}<div class="fc-meta"><span>${esc(topicTitle(z.t))}</span><span>${QZ.i + 1} / ${QZ.list.length} · верно ${right}</span></div>
+      <div class="flash-card quiz">${QZ.exam ? `<div class="ex-head">🎫 ${esc(QZ.exam.title)} · ошибок ${QZ.list.filter(x => x.checked && !x.ok).length} из ${allowedErr(QZ.list.length)} допустимых</div>` : ''}<div class="fc-meta"><span>${esc(topicTitle(z.t))}${z.lv ? ` · <b class="qz-lv lv-${z.lv}">${LVN[z.lv]}</b>` : ''}</span><span><span class="qz-timer" id="qzTimer" data-hint="Сколько времени вы думаете над этим вопросом">⏱ ${clock(it.checked ? it.dt : (Date.now() - it.t0) / 1000)}</span> · ${QZ.i + 1} / ${QZ.list.length} · верно ${right}</span></div>
       <div class="fc-q">${z.q}</div>
       ${z.code ? `<div class="answer"><pre><code class="language-java">${z.code}</code></pre></div>` : ''}
       <div class="qz-kind">${multi ? '☑ Выберите все правильные варианты' : '◉ Выберите один вариант'}</div>
-      <div class="qz-opts">${it.perm.map((oi, n) => {
+      <div class="qz-opts${it.revealed ? '' : ' qz-wait'}">${it.perm.map((oi, n) => {
         let cls = '';
         if (it.checked) { const corr = z.c.includes(oi), pk = it.pick.has(oi); cls = corr && pk ? 'ok' : corr ? 'miss' : pk ? 'bad' : ''; }
         else if (it.pick.has(oi)) cls = 'sel';
@@ -970,21 +984,31 @@
       <div class="fc-actions">${it.checked ? `<button class="btn" id="qzNext">${QZ.i + 1 < QZ.list.length ? 'Следующий вопрос →' : 'Результаты'}</button>` : `<button class="btn" id="qzCheck"${it.pick.size ? '' : ' disabled'}>Проверить</button>${QZ.exam ? '' : '<button class="btn ghost" id="qzSkip">Пропустить</button>'}`}
         <span class="hint"><kbd>1</kbd>–<kbd>${Math.min(9, z.o.length)}</kbd> выбор · <kbd>Enter</kbd> ${it.checked ? 'дальше' : 'проверить'}</span></div></div>`;
     enhanceCode(a, null);
+    if (!it.revealed) {                                  // сначала только вопрос, через 2 секунды плавно появляются варианты
+      const box = $('.qz-opts', a); clearTimeout(QZ.reveal);
+      QZ.reveal = setTimeout(() => { it.revealed = true; if (box && document.contains(box)) { box.classList.remove('qz-wait'); box.classList.add('qz-in'); } }, 2000);
+    }
+    if (!it.checked) { const tid = setInterval(() => { const t = $('#qzTimer'); if (!t || !QZ || QZ.list[QZ.i] !== it) return clearInterval(tid); const sec = (Date.now() - it.t0) / 1000; t.textContent = `⏱ ${clock(sec)}`; }, 1000); QZ.tick = tid; }
     $$('.qz-opt', a).forEach(l => l.onclick = () => quizPick(+l.dataset.oi));
     if ($('#qzCheck')) $('#qzCheck').onclick = quizCheck;
     if ($('#qzSkip')) $('#qzSkip').onclick = () => { QZ.i++; renderQuiz(); };
     if ($('#qzNext')) $('#qzNext').onclick = () => { QZ.i++; renderQuiz(); };
   }
   function quizPick(oi) {
-    const it = QZ.list[QZ.i]; if (it.checked) return;
+    const it = QZ.list[QZ.i]; if (it.checked || !it.revealed) return;
     if (it.z.c.length > 1) { it.pick.has(oi) ? it.pick.delete(oi) : it.pick.add(oi); } else { it.pick = new Set([oi]); }
     renderQuiz();
   }
   function quizCheck() {
     const it = QZ.list[QZ.i]; if (it.checked || !it.pick.size) return;
-    it.checked = true;
+    it.checked = true; clearInterval(QZ.tick);
+    it.dt = (Date.now() - it.t0) / 1000;
     it.ok = it.pick.size === it.z.c.length && it.z.c.every(c => it.pick.has(c));
-    S.qz[it.z.id] = it.ok ? 1 : 0; save();
+    S.qz[it.z.id] = it.ok ? 1 : 0;
+    // учёт скорости: по уровням суммируем затраченное и ожидаемое время
+    S.qzTime = S.qzTime || {}; const k = it.z.lv || 'm', T = S.qzTime[k] = S.qzTime[k] || { n: 0, spent: 0, exp: 0 };
+    T.n++; T.spent += Math.min(it.dt, (it.z.et || 20) * 6); T.exp += it.z.et || 20;
+    save();
     renderQuiz();
   }
   function renderQuizResult() {
@@ -992,19 +1016,26 @@
     const pct = ans.length ? Math.round(ok / ans.length * 100) : 0;
     const bad = ans.filter(x => !x.ok);
     const EX = QZ.exam; const errs = QZ.list.length - ok; const pass = EX ? errs <= allowedErr(QZ.list.length) : null;
+    clearInterval(QZ.tick);
+    const spent = ans.reduce((a, x) => a + (x.dt || 0), 0), expd = ans.reduce((a, x) => a + (x.z.et || 20), 0);
+    const byLv = ['j', 'm', 's'].map(k => { const xs = ans.filter(x => x.z.lv === k); return xs.length ? [k, xs.length, xs.reduce((a, x) => a + x.dt, 0), xs.reduce((a, x) => a + (x.z.et || 20), 0)] : null; }).filter(Boolean);
+    const slow = ans.slice().sort((a, b) => (b.dt / (b.z.et || 20)) - (a.dt / (a.z.et || 20))).slice(0, 3);
     if (!QZ.recorded && ans.length) {
       QZ.recorded = true;
       if (EX) {
-        pushHist({ m: EX.kind, title: EX.title, n: QZ.list.length, ok, pass });
+        pushHist({ m: EX.kind, title: EX.title, n: QZ.list.length, ok, pass, sec: Math.round(spent), exp: Math.round(expd) });
         if (EX.kind === 'ticket') { const prev = S.tk[EX.no]; if (!prev || ok > prev.ok || (pass && !prev.pass)) S.tk[EX.no] = { ok, n: QZ.list.length, pass, d: Date.now() }; save(); }
         if (EX.kind === 'ticket') { const tb = $(`.ticket[data-tk="${EX.no}"]`), r = S.tk[EX.no]; if (tb && r) { tb.className = 'ticket ' + (r.pass ? 'pass' : 'fail'); $('span', tb).textContent = `${r.ok} из ${r.n}`; } }
-      } else pushHist({ m: 'quiz', title: 'Самотест', n: ans.length, ok });
+      } else pushHist({ m: 'quiz', title: 'Самотест', n: ans.length, ok, sec: Math.round(spent), exp: Math.round(expd) });
     }
     const head = EX ? (pass ? `✅ ${esc(EX.title)}: сдан` : `❌ ${esc(EX.title)}: не сдан`) : (pct >= 85 ? 'Отлично!' : pct >= 60 ? 'Неплохо, но есть что повторить' : 'Стоит повторить тему');
     a.innerHTML = `<div class="flash-card${EX ? (pass ? ' ex-pass' : ' ex-fail') : ''}"><div class="qz-score"><div class="qz-ring" style="--p:${pct}"><span>${pct}%</span></div>
       <div><h2 style="margin:0 0 6px">${head}</h2>${EX ? `<p class="muted" style="margin:0 0 4px">Ошибок: ${errs}, допускается не больше ${allowedErr(QZ.list.length)}.</p>` : ''}
       <p class="muted" style="margin:0">Верно ${ok} из ${ans.length}${QZ.list.length > ans.length ? ` · пропущено ${QZ.list.length - ans.length}` : ''}</p>
+      ${ans.length ? `<div class="qz-time"><span>⏱ Время: <b>${fmtSec(spent)}</b> · в среднем ${fmtSec(spent / ans.length)} на вопрос · ожидалось ~${fmtSec(expd)}</span><span class="qz-speed ${spent <= expd ? 'fast' : 'slow'}">${speedText(spent, expd)}</span>
+        ${byLv.length > 1 ? `<span class="muted">${byLv.map(([k, n, sp, ex]) => `${LVN[k]}: ${speedText(sp, ex)}`).join(' · ')}</span>` : ''}</div>` : ''}
       <div class="fc-actions" style="margin-top:14px">${bad.length ? '<button class="btn rep" id="qzRetry">Повторить ошибки</button>' : ''}<button class="btn ghost" id="qzNew">${EX ? 'К билетам' : 'Новый тест'}</button></div></div></div>
+      ${slow.length > 1 ? `<div class="sec-title">Дольше всего думали</div>` + slow.map(x => `<div class="qz-slow"><span>${x.z.q}</span><span class="muted">${fmtSec(x.dt)} при ожидаемых ~${fmtSec(x.z.et || 20)}</span></div>`).join('') : ''}
       ${bad.length ? `<div class="sec-title">Разбор ошибок</div>` + bad.map(x => `<div class="qz-review"><div class="qz-rq">${x.z.q}</div>
         <div class="qz-ra">Правильно: ${x.z.c.map(c => `<span class="qz-ok">${x.z.o[c]}</span>`).join(' ')}</div><div class="answer">${x.z.e}</div>
         ${x.z.ref && Q[x.z.ref] ? `<a href="#/q/${x.z.ref}">📚 ${esc(Q[x.z.ref].q)} →</a>` : ''}</div>`).join('') : ''}</div>`;
@@ -1016,8 +1047,8 @@
     if (!QZ || !$('#qzArea') || e.target.matches('input,textarea,select') || e.ctrlKey || e.altKey) return;
     if (QZ.i >= QZ.list.length) return;
     const it = QZ.list[QZ.i];
-    if (/^[1-9]$/.test(e.key) && !it.checked) { const n = +e.key - 1; if (n < it.perm.length) { e.preventDefault(); quizPick(it.perm[n]); } }
-    else if (e.key === 'Enter') { e.preventDefault(); if (it.checked) { QZ.i++; renderQuiz(); } else quizCheck(); }
+    if (/^[1-9]$/.test(e.key) && !it.checked && it.revealed) { const n = +e.key - 1; if (n < it.perm.length) { e.preventDefault(); quizPick(it.perm[n]); } }
+    else if (e.key === 'Enter') { e.preventDefault(); if (it.checked) { QZ.i++; renderQuiz(); } else if (it.revealed) quizCheck(); }
   });
 
   // ======================================================================
@@ -1051,10 +1082,11 @@
     const byT = D.topics.map(t => (QZ_BY_T[t.slug] || []).slice()).filter(a => a.length);
     const seq = []; let i = 0;
     while (byT.some(a => a.length > i)) { byT.forEach(a => { if (a[i]) seq.push(a[i]); }); i++; }
-    const res = [];
-    for (let k = 0; k + TICKET <= seq.length; k += TICKET) res.push(seq.slice(k, k + TICKET));
-    const rest = seq.slice(res.length * TICKET);
-    if (rest.length) { const fill = seq.filter(z => !rest.includes(z)).slice(0, TICKET - rest.length); res.push(rest.concat(fill)); }
+    const res = []; let cur = [], gs = new Set(), wait = [];
+    const push = z => { cur.push(z); gs.add(z.g || z.id); if (cur.length === TICKET) { res.push(cur); cur = []; gs = new Set(); wait = wait.filter(w => { if (cur.length < TICKET && !gs.has(w.g || w.id)) { cur.push(w); gs.add(w.g || w.id); return false; } return true; }); } };
+    seq.forEach(z => gs.has(z.g || z.id) ? wait.push(z) : push(z));
+    wait.forEach(z => { if (!gs.has(z.g || z.id)) push(z); });
+    if (cur.length) { const fill = seq.filter(z => !cur.includes(z) && !gs.has(z.g || z.id)).slice(0, TICKET - cur.length); res.push(cur.concat(fill)); }
     return res;
   })();
   const allowedErr = n => Math.max(1, Math.floor(n / 10));
@@ -1066,7 +1098,9 @@
       <p class="subtitle">Как в ПДД: билет — ${TICKET} вопросов из разных тем, без таймера. Экзамен сдан, если ошибок не больше ${allowedErr(TICKET)}. Пропустить вопрос нельзя — сразу после ответа видно, верно ли.</p>
       <div class="panel"><div class="train-setup">
         <div class="field"><label>Темы экзамена</label><select id="exSrc"><option value="all">Все темы</option>${groups.map(g => `<option value="g:${esc(g)}">${esc(g)}</option>`).join('')}</select></div>
-        <div class="field"><label>Количество вопросов</label><select id="exCnt"><option value="20" selected>20 — как в ПДД</option><option value="40">40</option><option value="10">10 — короткий</option></select></div>
+        <div class="field"><label>Уровень</label><select id="exLv">${LV_OPTS}</select></div>
+        <div class="field"><label>Тип вопросов</label><select id="exKind">${KIND_OPTS}</select></div>
+        <div class="field"><label>Количество вопросов</label><select id="exCnt"><option value="20" selected>20 — как в ПДД</option><option value="10">10 — короткий</option>${[40, 60, 80, 100].map(n => `<option value="${n}">${n}</option>`).join('')}</select></div>
       </div><div style="margin-top:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><button class="btn" id="exGo">Начать экзамен</button>
       <span class="muted">Экзаменов сдано: ${examOk} из ${exams.length}</span></div></div>
       <div class="sec-title">Билеты · сдано ${passed} из ${TICKETS.length}</div>
@@ -1074,13 +1108,19 @@
       <p class="muted" style="font-size:13px">Состав билетов постоянный: в каждом — вопросы из разных тем. Зелёный — сдан, красный — не сдан (в зачёт идёт лучший результат).</p>
       <div id="qzArea"></div></div>`;
     $('#exGo').onclick = () => {
-      const src = $('#exSrc').value, n = +$('#exCnt').value;
-      const pool = src === 'all' ? ZALL.slice() : ZALL.filter(z => TOPIC[z.t] && TOPIC[z.t].group === src.slice(2));
-      const byT = {}; shuffle(pool).forEach(z => (byT[z.t] = byT[z.t] || []).push(z));
+      const src = $('#exSrc').value, n = +$('#exCnt').value, lv = $('#exLv').value, kd = $('#exKind').value; S.exLv = lv; S.exKind = kd; save();
+      let pool = src === 'all' ? ZALL.slice() : ZALL.filter(z => TOPIC[z.t] && TOPIC[z.t].group === src.slice(2));
+      if (lv !== 'all') pool = pool.filter(z => z.lv === lv);
+      if (kd !== 'all') pool = pool.filter(z => z.k === kd);
+      pool = uniqueGroups(shuffle(pool));                       // один вопрос из группы вариантов
+      if (!pool.length) { toast('В выбранных темах нет вопросов этого уровня и типа'); return; }
+      if (pool.length < n) toast(`Разных вопросов только ${pool.length} — экзамен будет из ${pool.length}`);
+      const byT = {}; pool.forEach(z => (byT[z.t] = byT[z.t] || []).push(z));
       const keys = shuffle(Object.keys(byT)); const pick = [];
       while (pick.length < n && keys.some(k => byT[k].length)) keys.forEach(k => { if (pick.length < n && byT[k].length) pick.push(byT[k].pop()); });
-      runExam(shuffle(pick), { kind: 'exam', title: 'Экзамен' + (src === 'all' ? '' : ': ' + src.slice(2)) });
+      runExam(shuffle(pick), { kind: 'exam', title: 'Экзамен' + (src === 'all' ? '' : ': ' + src.slice(2)) + (lv !== 'all' ? ' · ' + LVN[lv] : '') + (kd !== 'all' ? ' · ' + { th: 'теория', code: 'что выведет код', sql: 'SQL' }[kd] : '') });
     };
+    $('#exLv').value = S.exLv || 'all'; $('#exKind').value = S.exKind || 'all';
     $$('.ticket').forEach(b => b.onclick = () => runExam(TICKETS[+b.dataset.tk - 1].slice(), { kind: 'ticket', no: +b.dataset.tk, title: 'Билет № ' + b.dataset.tk }));
     $('.main').scrollTop = 0;
   }
@@ -1106,6 +1146,7 @@
       <p class="subtitle">Профиль «${esc(curProfile().name)}». Всё считается по вашим отметкам «Знаю / Повторить», самотесту и экзаменам.</p>
       <div class="st-tiles">${tile(Math.round(all.k / all.n * 100) + '%', 'изучено', `${all.k} из ${all.n} вопросов`)}${tile(all.r, 'на повторении', '')}
         ${tile(ans.length, 'решено в самотесте', `из ${ZALL.length} · верно ${ans.length ? Math.round(okN / ans.length * 100) : 0}%`)}
+        ${(() => { const T = Object.values(S.qzTime || {}); const n = T.reduce((a, t) => a + t.n, 0), sp = T.reduce((a, t) => a + t.spent, 0), ex = T.reduce((a, t) => a + t.exp, 0); return n ? tile(fmtSec(sp / n), 'в среднем на ответ', speedText(sp, ex) + ['j', 'm', 's'].filter(k => S.qzTime[k]).map(k => `<br>${LVN[k]}: ${speedText(S.qzTime[k].spent, S.qzTime[k].exp)}`).join('')) : ''; })()}
         ${tile(exams.filter(h => h.pass).length + ' / ' + exams.length, 'экзаменов сдано', '')}${tile(tks.filter(r => r.pass).length + ' / ' + TICKETS.length, 'билетов сдано', '')}${tile(notes, 'заметок', '')}</div>
       ${weak.length ? `<div class="panel warn"><h3>Слабые места</h3><p class="muted" style="margin-top:0">Темы, где в самотесте меньше 70% верных ответов:</p>${weak.map(r => `<a class="list-link" href="#/quiz/${r.t.slug}"><span class="tt">${esc(r.t.title)}</span><span class="m">${r.acc}% · ${r.zo} из ${r.za} → тест по теме</span></a>`).join('')}${ZALL.some(z => S.qz[z.id] === 0) ? '<a class="list-link" href="#/quiz/wrong"><span class="tt">🔁 Прорешать все свои ошибки</span></a>' : ''}</div>` : ''}
       <div class="sec-title">По темам</div>
@@ -1113,7 +1154,7 @@
       ${rows.map(r => `<tr><td><a href="#/t/${r.t.slug}">${esc(r.t.title)}</a></td><td><div class="st-bar">${barHTML(r.s)}<span>${r.s.k}/${r.s.n}</span></div></td><td>${r.zn ? `${r.za}/${r.zn}` : '—'}</td><td>${r.acc === null ? '<span class="muted">—</span>' : `<span class="acc ${r.acc >= 85 ? 'hi' : r.acc >= 60 ? 'mid' : 'lo'}">${r.acc}%</span>`}</td></tr>`).join('')}
       </tbody></table></div>
       <div class="sec-title">История тестов и экзаменов</div>
-      ${S.hist.length ? `<div class="tbl"><table><thead><tr><th>Когда</th><th>Что</th><th>Результат</th></tr></thead><tbody>${S.hist.slice(-25).reverse().map(h => `<tr><td>${fmtDate(h.d)}</td><td>${esc(h.title || 'Самотест')}</td><td>${h.ok} из ${h.n}${h.m !== 'quiz' ? (h.pass ? ' · <span class="acc hi">сдан</span>' : ' · <span class="acc lo">не сдан</span>') : ''}</td></tr>`).join('')}</tbody></table></div>` : '<p class="muted">Пройдите самотест или экзамен — результаты появятся здесь.</p>'}
+      ${S.hist.length ? `<div class="tbl"><table><thead><tr><th>Когда</th><th>Что</th><th>Результат</th></tr></thead><tbody>${S.hist.slice(-25).reverse().map(h => `<tr><td>${fmtDate(h.d)}</td><td>${esc(h.title || 'Самотест')}</td><td>${h.ok} из ${h.n}${h.sec ? ` · ⏱ ${fmtSec(h.sec)}` : ''}${h.m !== 'quiz' ? (h.pass ? ' · <span class="acc hi">сдан</span>' : ' · <span class="acc lo">не сдан</span>') : ''}</td></tr>`).join('')}</tbody></table></div>` : '<p class="muted">Пройдите самотест или экзамен — результаты появятся здесь.</p>'}
     </div>`;
     $('.main').scrollTop = 0;
   }
@@ -1740,7 +1781,7 @@
     $('#lvSeg').innerHTML = ['j', 'm', 's', 'a', 'd'].map(k => `<button data-l="${k}" class="${S.level === k ? 'on' : ''}" title="${LV[k]}">${k === 'a' ? 'Все' : k === 'd' ? 'Подробно' : LV[k]}</button>`).join('');
   }
   function setLevel(l) {
-    S.level = l; save(); renderLevelSeg();
+    S.level = l; save(); renderLevelSeg(); document.documentElement.dataset.level = l;
     $$('.card').forEach(c => { c.dataset.lv = l; if (c.dataset.filled) fillCard(c, l); });
     if (T && $('#trArea')) trainLevel(l);
   }

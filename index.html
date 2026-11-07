@@ -4,16 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#202720">
-<title>VibeOFF — Java-тренажёр без автопилота · v1.1.3</title>
+<title>VibeOFF — Java-тренажёр без автопилота · v1.2.1</title>
 <meta name="author" content="Антон Сынушкин">
 <meta name="description" content="VibeOFF — бесплатный офлайн-тренажёр и учебник Java-разработчика: больше 1000 вопросов с ответами Junior, Middle и Senior, Spring, Kotlin, SQL, Git, многопоточность, архитектура, самотест и экзамен, тренажёры LeetCode, рефакторинга, Git и SQL.">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://3meshokccaxapom3.github.io/VibeOFF/">
-<meta name="version" content="1.1.3">
+<meta name="version" content="1.2.1">
 <link rel="icon" type="image/png" href="assets/img/vibeoff-64.png">
 <link rel="apple-touch-icon" href="assets/img/vibeoff-128.png">
-<link rel="stylesheet" href="assets/css/style.css?v=1.1.3">
-<script>try{var p=JSON.parse(localStorage.getItem('java-sprav:profiles'))||{cur:'p0'};var s=JSON.parse(localStorage.getItem(p.cur==='p0'?'java-sprav:v1':'java-sprav:v1:'+p.cur))||{};var t=s.theme||'light';if(t==='auto')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;document.documentElement.dataset.style=s.style||'lime'}catch(e){}</script>
+<link rel="stylesheet" href="assets/css/style.css?v=1.2.1">
+<script>try{var p=JSON.parse(localStorage.getItem('java-sprav:profiles'))||{cur:'p0'};var s=JSON.parse(localStorage.getItem(p.cur==='p0'?'java-sprav:v1':'java-sprav:v1:'+p.cur))||{};var t=s.theme||'light';if(t==='auto')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;document.documentElement.dataset.style=s.style||'lime';document.documentElement.dataset.level=s.level||'j'}catch(e){}</script>
 </head>
 <body>
 <div class="wall" id="wall" aria-hidden="true"></div>
@@ -24,7 +24,7 @@
     <div class="profile" id="profile"></div>
     <div class="side-links" id="sideLinks"></div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot"><a href="#/about" data-hint="О приложении, автор и обратная связь">Антон Сынушкин</a> · <a href="javascript:void 0" data-changes data-hint="Что нового: история версий">v1.1.3</a></div>
+    <div class="side-foot"><a href="#/about" data-hint="О приложении, автор и обратная связь">Антон Сынушкин</a> · <a href="javascript:void 0" data-changes data-hint="Что нового: история версий">v1.2.1</a></div>
   </aside>
   <main class="main">
     <div class="topbar">
@@ -56,15 +56,15 @@
 <div class="toast" id="toast"></div>
 <noscript><h1>VibeOFF — Java-тренажёр и учебник</h1><p>VibeOFF — бесплатный офлайн-тренажёр и учебник Java-разработчика: больше 1000 вопросов с ответами Junior, Middle и Senior, Spring, Kotlin, SQL, Git, многопоточность, архитектура, самотест и экзамен, тренажёры LeetCode, рефакторинга, Git и SQL.</p><h2>Java Core</h2><ul><li>Язык и ООП</li><li>Коллекции и Stream API</li><li>Многопоточность</li><li>Версии Java 8 → 26</li><li>Строки, текст и ввод-вывод</li></ul><h2>Kotlin</h2><ul><li>Основы Kotlin</li><li>Kotlin и Java</li><li>Корутины и продвинутый Kotlin</li></ul><h2>Алгоритмы</h2><ul><li>Алгоритмы и структуры данных</li></ul><h2>Данные</h2><ul><li>SQL и базы данных</li><li>Hibernate и Spring Data JPA</li><li>NoSQL</li><li>Кеш и Redis</li></ul><h2>Spring</h2><ul><li>Spring Core и Boot</li><li>Reactive и WebFlux</li></ul><h2>Веб и API</h2><ul><li>REST, gRPC, GraphQL</li><li>HTTP и сети</li><li>JSON и Jackson</li></ul><h2>Безопасность</h2><ul><li>Безопасность приложений</li><li>Криптография</li></ul><h2>Брокеры сообщений</h2><ul><li>Основы обмена сообщениями</li><li>Apache Kafka</li><li>RabbitMQ</li></ul><h2>Бизнес-процессы</h2><ul><li>BPMN и Camunda 7</li><li>Camunda 8 и Zeebe</li></ul><h2>Архитектура</h2><ul><li>Архитектура приложений</li><li>Паттерны проектирования</li><li>Микросервисы и Spring Cloud</li><li>System Design</li><li>Высоконагруженные сервисы</li></ul><h2>Эксплуатация</h2><ul><li>Наблюдаемость: логи, метрики, трейсы</li><li>Производительность</li></ul><h2>Инструменты</h2><ul><li>Maven и Gradle</li><li>Git</li><li>Linux</li><li>Docker</li><li>Kubernetes</li><li>CI/CD</li></ul><h2>Практика</h2><ul><li>Учебный проект</li><li>Чистый код</li><li>Тестирование и JUnit</li><li>Java и AI</li></ul><p>Для работы приложения включите JavaScript.</p></noscript>
 
-<script src="assets/vendor/highlight.min.js?v=1.1.3"></script>
-<script src="assets/vendor/dockerfile.min.js?v=1.1.3"></script>
-<script src="assets/js/data.js?v=1.1.3"></script>
-<script src="assets/js/gitlab.js?v=1.1.3"></script>
-<script src="assets/vendor/sql-asm.js?v=1.1.3"></script>
-<script src="assets/js/sqllab-data.js?v=1.1.3"></script>
-<script src="assets/js/sqllab.js?v=1.1.3"></script>
-<script src="assets/js/idea.js?v=1.1.3"></script>
-<script src="assets/js/tools.js?v=1.1.3"></script>
-<script src="assets/js/app.js?v=1.1.3"></script>
+<script src="assets/vendor/highlight.min.js?v=1.2.1"></script>
+<script src="assets/vendor/dockerfile.min.js?v=1.2.1"></script>
+<script src="assets/js/data.js?v=1.2.1"></script>
+<script src="assets/js/gitlab.js?v=1.2.1"></script>
+<script src="assets/vendor/sql-asm.js?v=1.2.1"></script>
+<script src="assets/js/sqllab-data.js?v=1.2.1"></script>
+<script src="assets/js/sqllab.js?v=1.2.1"></script>
+<script src="assets/js/idea.js?v=1.2.1"></script>
+<script src="assets/js/tools.js?v=1.2.1"></script>
+<script src="assets/js/app.js?v=1.2.1"></script>
 </body>
 </html>

@@ -1211,3 +1211,26 @@ html.file-mode .sp-wt{isolation:isolate}
   body.has-outline.ol-auto.ol-open .outline-tab{opacity:0;pointer-events:none}
   body.has-wall.has-outline.ol-auto .wall::after{background:linear-gradient(90deg,transparent 0,transparent calc(50% - 640px),var(--bg) calc(50% - 520px),var(--bg) calc(50% + 520px),transparent calc(50% + 640px))}
 }
+
+/* ===== 1.2: время, уровни вопросов, плавное появление вариантов ===== */
+.qz-wait{opacity:0;transform:translateY(6px);pointer-events:none}
+.qz-in{animation:qz-in .45s ease both}
+@keyframes qz-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.qz-lv{font-size:11.5px;font-weight:700;padding:1px 7px;border-radius:6px;text-transform:none;letter-spacing:0}
+.qz-lv.lv-j{color:var(--j);background:var(--j-soft)} .qz-lv.lv-m{color:var(--m);background:var(--m-soft)} .qz-lv.lv-s{color:var(--s);background:var(--s-soft)}
+.qz-timer{font-variant-numeric:tabular-nums}
+.qz-timer.over{color:var(--rep)}
+.qz-time{display:flex;flex-direction:column;gap:3px;margin-top:10px;font-size:13.5px}
+.qz-speed{font-weight:700}
+.qz-speed.fast{color:var(--ok)} .qz-speed.slow{color:var(--rep)}
+.qz-slow{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px dashed var(--line);font-size:14px}
+.qz-slow .muted{white-space:nowrap;font-size:12.5px}
+/* тон интерфейса по уровню ответа: едва заметная окраска, не спорит со стилем */
+:root{--lvc:var(--j)}
+html[data-level=m]{--lvc:var(--m)} html[data-level=s]{--lvc:var(--s)} html[data-level=a]{--lvc:var(--accent)} html[data-level=d]{--lvc:var(--accent-ink)}
+.topbar{box-shadow:inset 0 -2px 0 color-mix(in srgb,var(--lvc) 55%,transparent);transition:box-shadow .3s}
+.main{background:linear-gradient(180deg,color-mix(in srgb,var(--lvc) 5%,transparent) 0,transparent 260px) no-repeat;transition:background .3s}
+body.has-wall .main{background:none}
+.answer h4::before{background:var(--lvc)!important}
+.card.open{border-left:3px solid color-mix(in srgb,var(--lvc) 70%,transparent)}
+.lv-tabs button.on{box-shadow:inset 0 -2px 0 var(--lvc)}
